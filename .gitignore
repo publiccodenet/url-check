@@ -3,6 +3,11 @@
 
 blog.publiccode.net/
 standard-for-public-code/
+bogus-checks.json
+
+__pycache__/
+.coverage
+*.swp
 
 # for gh-pages branch
 Gemfile.lock
