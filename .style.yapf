@@ -1,0 +1,5 @@
+[style]
+based_on_style = yapf
+use_tabs = True
+# continuation_align_style = VALIGN-RIGHT
+continuation_align_style = FIXED
