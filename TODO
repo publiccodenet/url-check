@@ -4,14 +4,8 @@
 
 * build a git workflow that pushes the results to gh-pages branch
 
-* make the repo name-urls dictionary a configuration file
-
 * improve tests
 
 * look to see if there is a more git-diff friendly format, json5 ?
   * https://pypi.org/project/json5/
   * Objects and arrays may end with trailing commas
-
-* allow the file to purge older entries, perhaps
-  * keep only the last N checks, or
-  * thin the history in some smarter way

@@ -3,7 +3,8 @@
 
 blog.publiccode.net/
 standard-for-public-code/
-bogus-checks.json
+test-obj.json
+test-data/
 
 __pycache__/
 .coverage

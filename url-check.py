@@ -2,6 +2,10 @@
 # SPDX-License-Identifier: CC0-1.0
 # SPDX-FileCopyrightText: 2023 The Foundation for Public Code <info@publiccode.net>
 
+# defaults
+checks_json = "url-check-checks.json"
+repos_json = "url-check-repos.json"
+
 import json
 import os
 import re
@@ -11,49 +15,58 @@ import sys
 import datetime
 
 
-def files_from_repo(repo_name, repo_url):
-	clone_cmd = ["git", "clone", repo_url, repo_name]
-	result = subprocess.run(clone_cmd)
+def write_json(json_file, obj):
+	with open(json_file, "w") as outfile:
+		outfile.write(json.dumps(obj, indent=4) + "\n")
 
-	branch_cmd_str = 'git branch | grep \* | cut -d" " -f2'
-	result = subprocess.run(
-		branch_cmd_str,
-		shell=True,
-		stdout=subprocess.PIPE,
-		stderr=subprocess.STDOUT,
-		cwd=f"./{repo_name}",
-	)
-	branch = result.stdout.decode("utf-8").rstrip()
 
-	list_files_cmd = ["git", "ls-tree", "-r", "--name-only", branch]
+def read_json(json_file):
+	if os.path.exists(json_file):
+		with open(json_file, "r") as in_file:
+			return json.load(in_file)
+	return {}
+
+
+def shell_slurp(cmd_str, working_dir=".", fail_func=None):
 	result = subprocess.run(
-		list_files_cmd,
-		stdout=subprocess.PIPE,
-		stderr=subprocess.STDOUT,
-		cwd=f"./{repo_name}",
+			cmd_str,
+			shell=True,
+			stdout=subprocess.PIPE,
+			stderr=subprocess.STDOUT,
+			cwd=working_dir,
 	)
-	files = result.stdout.decode("utf-8").splitlines()
+	if (result.returncode and fail_func):
+		return fail_func(result)
+
+	return result.stdout.decode("utf-8")
+
+
+def files_from_repo(repo_dir, repo_url):
+	clone_cmd = f"git clone {repo_url} {repo_dir}"
+	text = shell_slurp(clone_cmd, ".")
+
+	branch_cmd = "git branch | grep \* | cut -d' ' -f2"
+	branch = shell_slurp(branch_cmd, repo_dir).rstrip()
+
+	list_cmd = f"git ls-tree -r --name-only {branch}"
+	files = shell_slurp(list_cmd, repo_dir).splitlines()
+
 	return files
 
 
 def urls_from(workdir, file):
 	found = []
 	cmd_str = f"grep --extended-regexp --only-matching \
-		\"(http|https)://[a-zA-Z0-9./?=_%:\-]*\" \
-		\"{file}\" \
+		'(http|https)://[a-zA-Z0-9\./\?=_%:\-]*' \
+		'{file}' \
 		| sort --unique \
 		| grep --invert-match '^http[s]\?://localhost' \
 		| grep --invert-match '^http[s]\?://127.0.0.1' \
 		| grep --invert-match '^http[s]\?://web.archive.org' \
 		"
-	result = subprocess.run(
-		cmd_str,
-		shell=True,
-		stdout=subprocess.PIPE,
-		stderr=subprocess.STDOUT,
-		cwd=workdir,
-	)
-	for url in result.stdout.decode("utf-8").splitlines():
+
+	urls = shell_slurp(cmd_str, workdir).splitlines()
+	for url in urls:
 		# ignore 'binary file matches' messages, only grab URLs
 		if url.startswith("http"):
 			found += [url]
@@ -86,8 +99,8 @@ def set_used(checks, name, files):
 
 
 def sort_by_key(stuff):
-	return {key: val for key, val in
-		sorted(stuff.items(), key=lambda el: el[0])}
+	sorted_elems = sorted(stuff.items(), key=lambda el: el[0])
+	return {key: val for key, val in sorted_elems}
 
 
 def status_code_for_url(url):
@@ -98,49 +111,68 @@ def status_code_for_url(url):
 		return 0
 
 
-def write_out_checks(checks_file, checks):
-	with open(checks_file, "w") as outfile:
-		outfile.write(json.dumps(checks, indent=4) + "\n")
+# The System_Context class exists so that tests can intercept system functions.
+#
+# Rather than always directly call for the current time, tests can inject
+# there own values.
+#
+# Rather than logging directly to the screen, tests can capture the output.
+#
+class System_Context:
+
+	def now(self):
+		return str(datetime.datetime.utcnow())
+
+	def log(self, *args, **kwargs):
+		print(*args, **kwargs)
 
 
-def load_previous_checks(checks_file):
-	if os.path.exists(checks_file):
-		with open(checks_file, "r") as in_file:
-			return json.load(in_file)
-	return {}
-
-
-def url_check_all(checks_file, repos):
-
-	checks = load_previous_checks(checks_file)
+def read_repos_files(repos=read_json(repos_json), ctx=System_Context()):
+	repo_files = {}
 
 	for repo_name, repo_url in repos.items():
-		print(repo_name, repo_url)
-		clear_previous_used(checks, repo_name)
+		ctx.log(repo_name, repo_url)
 		files = files_from_repo(repo_name, repo_url)
+		repo_files[repo_name] = files
+
+	return repo_files
+
+
+def url_check_all(
+		checks=read_json(checks_json),
+		repos_files=read_repos_files(),
+		ctx=System_Context()):
+
+	for repo_name, files in repos_files.items():
+		clear_previous_used(checks, repo_name)
 		set_used(checks, repo_name, files)
 
 	checks = sort_by_key(checks)
 
 	for url, data in checks.items():
-		when = str(datetime.datetime.utcnow())
-		print(when, url)
+		when = ctx.now()
+		ctx.log(when, url)
 		status_code = status_code_for_url(url)
-		print(status_code, url)
-		checks[url]["checks"][when] = status_code
-		# TODO: keep only the last N checks?
+		ctx.log(status_code, url)
+		if (status_code == 200):
+			checks[url]["checks"].pop("200", None)
+			checks[url]["checks"].pop("fail", None)
+			checks[url]["checks"]["200"] = when
+		else:
+			if "fail" in checks[url]["checks"].keys():
+				checks[url]["checks"]["fail"]["to"] = when
+				checks[url]["checks"]["fail"]["to-code"] = status_code
+			else:
+				checks[url]["checks"]["fail"] = {}
+				checks[url]["checks"]["fail"]["from"] = when
+				checks[url]["checks"]["fail"]["from-code"] = status_code
 
-	write_out_checks(checks_file, checks)
+	return checks
 
 
-def main():
-	checks_file = "url-check.json"
-	repos = {
-		"standard-for-public-code": "https://github.com/publiccodenet/standard.git",
-		"blog.publiccode.net": "https://github.com/publiccodenet/blog.git",
-	}
-	url_check_all(checks_file, repos)
+def main():  # pragma: no cover
+	write_json(checks_json, url_check_all())
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
 	main()
