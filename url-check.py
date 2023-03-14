@@ -6,6 +6,12 @@
 checks_json = "url-check-checks.json"
 repos_json = "url-check-repos.json"
 
+ignore_patterns = [
+		'^http[s]\?://localhost',
+		'^http[s]\?://127.0.0.1',
+		'^http[s]\?://web.archive.org',
+]
+
 import json
 import os
 import re
@@ -21,12 +27,14 @@ def write_json(json_file, obj):
 
 
 def read_json(json_file):
-	if os.path.exists(json_file):
-		with open(json_file, "r") as in_file:
-			return json.load(in_file)
-	return {}
+	if not os.path.exists(json_file):
+		return {}
+	with open(json_file, "r") as in_file:
+		return json.load(in_file)
 
 
+# spawn a shell to run the commmand(s),
+# returns the text which would have been output to the screen
 def shell_slurp(cmd_str, working_dir=".", fail_func=None):
 	result = subprocess.run(
 			cmd_str,
@@ -42,14 +50,14 @@ def shell_slurp(cmd_str, working_dir=".", fail_func=None):
 
 
 def files_from_repo(repo_dir, repo_url):
-	clone_cmd = f"git clone {repo_url} {repo_dir}"
-	text = shell_slurp(clone_cmd, ".")
+	cmd = f"git clone {repo_url} {repo_dir}"
+	shell_slurp(cmd)
 
-	branch_cmd = "git branch | grep \* | cut -d' ' -f2"
-	branch = shell_slurp(branch_cmd, repo_dir).rstrip()
+	cmd = "git branch | grep \* | cut -d' ' -f2"
+	branch = shell_slurp(cmd, repo_dir).rstrip()
 
-	list_cmd = f"git ls-tree -r --name-only {branch}"
-	files = shell_slurp(list_cmd, repo_dir).splitlines()
+	cmd = f"git ls-tree -r --name-only {branch}"
+	files = shell_slurp(cmd, repo_dir).splitlines()
 
 	return files
 
@@ -59,11 +67,10 @@ def urls_from(workdir, file):
 	cmd_str = f"grep --extended-regexp --only-matching \
 		'(http|https)://[a-zA-Z0-9\./\?=_%:\-]*' \
 		'{file}' \
-		| sort --unique \
-		| grep --invert-match '^http[s]\?://localhost' \
-		| grep --invert-match '^http[s]\?://127.0.0.1' \
-		| grep --invert-match '^http[s]\?://web.archive.org' \
-		"
+		| sort --unique"
+
+	for pattern in ignore_patterns:
+		cmd_str += f" | grep --invert-match '{pattern}'"
 
 	urls = shell_slurp(cmd_str, workdir).splitlines()
 	for url in urls:
@@ -94,6 +101,7 @@ def set_used_for_file(checks, name, file):
 
 
 def set_used(checks, name, files):
+	clear_previous_used(checks, name)
 	for file in files:
 		set_used_for_file(checks, name, file)
 
@@ -127,7 +135,7 @@ class System_Context:
 		print(*args, **kwargs)
 
 
-def read_repos_files(repos=read_json(repos_json), ctx=System_Context()):
+def read_repos_files(repos, ctx=System_Context()):
 	repo_files = {}
 
 	for repo_name, repo_url in repos.items():
@@ -138,29 +146,29 @@ def read_repos_files(repos=read_json(repos_json), ctx=System_Context()):
 	return repo_files
 
 
+# if we got a 200, then everything is fine again, forget the fails
+# else if it the first fail, set the "fail" "from"
+# otherwise, the values in "fail" "to"
 def update_status(check, status_code, when):
 	check["status"] = status_code
 	if (status_code == 200):
 		check.pop("200", None)
 		check.pop("fail", None)
 		check["200"] = when
+		return
+
+	if "fail" not in check.keys():
+		check["fail"] = {}
+		check["fail"]["from"] = when
+		check["fail"]["from-code"] = status_code
 	else:
-		if "fail" in check.keys():
-			check["fail"]["to"] = when
-			check["fail"]["to-code"] = status_code
-		else:
-			check["fail"] = {}
-			check["fail"]["from"] = when
-			check["fail"]["from-code"] = status_code
+		check["fail"]["to"] = when
+		check["fail"]["to-code"] = status_code
 
 
-def url_check_all(
-		checks=read_json(checks_json),
-		repos_files=read_repos_files(),
-		ctx=System_Context()):
+def url_check_all(checks, repos_files, ctx=System_Context()):
 
 	for repo_name, files in repos_files.items():
-		clear_previous_used(checks, repo_name)
 		set_used(checks, repo_name, files)
 
 	checks = sort_by_key(checks)
@@ -171,12 +179,15 @@ def url_check_all(
 		status_code = status_code_for_url(url)
 		ctx.log(status_code, url)
 		update_status(checks[url]["checks"], status_code, when)
+		ctx.log("")
 
 	return checks
 
 
 def main():  # pragma: no cover
-	write_json(checks_json, url_check_all())
+	checks = read_json(checks_json)
+	repos_files = read_repos_files(read_json(repos_json))
+	write_json(checks_json, url_check_all(checks, repos_files))
 
 
 if __name__ == "__main__":  # pragma: no cover

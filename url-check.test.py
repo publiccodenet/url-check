@@ -34,7 +34,7 @@ class TestSum(unittest.TestCase):
 		self.assertEqual(x.string, when)
 
 		# only check that it doesn't crash
-		ctx.log(".", end="")
+		ctx.log("", end="")
 
 	def test_files_from_repo(self):
 		repo_name = "blog.publiccode.net"
