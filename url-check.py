@@ -138,6 +138,22 @@ def read_repos_files(repos=read_json(repos_json), ctx=System_Context()):
 	return repo_files
 
 
+def update_status(check, status_code, when):
+	check["status"] = status_code
+	if (status_code == 200):
+		check.pop("200", None)
+		check.pop("fail", None)
+		check["200"] = when
+	else:
+		if "fail" in check.keys():
+			check["fail"]["to"] = when
+			check["fail"]["to-code"] = status_code
+		else:
+			check["fail"] = {}
+			check["fail"]["from"] = when
+			check["fail"]["from-code"] = status_code
+
+
 def url_check_all(
 		checks=read_json(checks_json),
 		repos_files=read_repos_files(),
@@ -154,19 +170,7 @@ def url_check_all(
 		ctx.log(when, url)
 		status_code = status_code_for_url(url)
 		ctx.log(status_code, url)
-		checks[url]["checks"]["status"] = status_code
-		if (status_code == 200):
-			checks[url]["checks"].pop("200", None)
-			checks[url]["checks"].pop("fail", None)
-			checks[url]["checks"]["200"] = when
-		else:
-			if "fail" in checks[url]["checks"].keys():
-				checks[url]["checks"]["fail"]["to"] = when
-				checks[url]["checks"]["fail"]["to-code"] = status_code
-			else:
-				checks[url]["checks"]["fail"] = {}
-				checks[url]["checks"]["fail"]["from"] = when
-				checks[url]["checks"]["fail"]["from-code"] = status_code
+		update_status(checks[url]["checks"], status_code, when)
 
 	return checks
 
