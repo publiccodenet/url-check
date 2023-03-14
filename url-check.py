@@ -154,6 +154,7 @@ def url_check_all(
 		ctx.log(when, url)
 		status_code = status_code_for_url(url)
 		ctx.log(status_code, url)
+		checks[url]["checks"]["status"] = status_code
 		if (status_code == 200):
 			checks[url]["checks"].pop("200", None)
 			checks[url]["checks"].pop("fail", None)

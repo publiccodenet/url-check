@@ -161,6 +161,7 @@ class TestSum(unittest.TestCase):
 		checks = {
 				"https://example.net/": {
 				"checks": {
+				"status": 404,
 				"fail": {
 				"from": "2023-03-01 12:22:00.000000",
 				"from-code": 404,
@@ -174,6 +175,7 @@ class TestSum(unittest.TestCase):
 				},
 				"https://www.bogus.gov/bad": {
 				"checks": {
+				"status": 404,
 				"fail": {
 				"from": "2023-03-02 15:25:00.123456",
 				"from-code": 404
@@ -185,6 +187,7 @@ class TestSum(unittest.TestCase):
 				},
 				"https://www.bogus.gov/bad2": {
 				"checks": {
+				"status": 200,
 				"200": "2023-03-08 15:25:04.456789",
 				},
 				"used": {
@@ -196,6 +199,7 @@ class TestSum(unittest.TestCase):
 		expected = {
 				"https://example.net/": {
 				"checks": {
+				"status": 200,
 				"200": "2023-03-13 14:00:00.100001"
 				},
 				"used": {
@@ -204,6 +208,7 @@ class TestSum(unittest.TestCase):
 				},
 				"https://example.org/": {
 				"checks": {
+				"status": 200,
 				"200": "2023-03-13 14:00:00.100002"
 				},
 				"used": {
@@ -212,6 +217,7 @@ class TestSum(unittest.TestCase):
 				},
 				"https://www.bogus.gov/bad": {
 				"checks": {
+				"status": 0,
 				"fail": {
 				"from": "2023-03-02 15:25:00.123456",
 				"from-code": 404,
@@ -225,6 +231,7 @@ class TestSum(unittest.TestCase):
 				},
 				"https://www.bogus.gov/bad2": {
 				"checks": {
+				"status": 0,
 				"200": "2023-03-08 15:25:04.456789",
 				"fail": {
 				"from": "2023-03-13 14:00:00.100004",
@@ -237,6 +244,7 @@ class TestSum(unittest.TestCase):
 				}
 		}
 		checks = uc.url_check_all(checks, repos_files, Test_Context())
+		self.maxDiff = None
 		self.assertEqual(checks, expected)
 
 
