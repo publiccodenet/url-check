@@ -1,11 +1,25 @@
 # TODO
 
+* extract failures-only to a report file
+  * sort by result code, 404 first, and everything else after
+
 * make a web page (jekyll?) to display the results
+  * consider exploding url status results into files of the form
+	{ "color": "green",
+          "status": "200 2023-05-04 11:13:11Z",
+          "subject": "https://example.org/foo" }
+    which can be fetched via a simple badge URL perhaps like:
+	https://publiccodenet.github.io/url-check/status/https/example.org/foo
+  * consider aggregating the results per codebase,
+    so we may replace the link-check badges on each repo README
 
 * build a git workflow that pushes the results to gh-pages branch
+  and emails on failure
 
 * improve tests
 
 * look to see if there is a more git-diff friendly format, json5 ?
   * https://pypi.org/project/json5/
   * Objects and arrays may end with trailing commas
+
+* consider async IO per domain
