@@ -10,12 +10,16 @@
 BROWSER ?= firefox
 SHELL=/bin/bash
 
-default: check
+default: check-all
+
+run: url-check.py url-check-repos.json
+	./url-check.py
 
 url-check.test.py: url-check.py
 
 check: url-check.test.py
 	./$<
+	@echo "SUCCESS $@"
 
 .coverage: url-check.test.py
 	coverage run url-check.test.py
@@ -39,6 +43,10 @@ check-coverage: .coverage
 			false; \
 		fi \
 	}
+	@echo "SUCCESS $@"
+
+check-all: check check-coverage
+	@echo "SUCCESS $@"
 
 htmlcov/url-check_py.html: .coverage
 	coverage html url-check.py

@@ -46,15 +46,28 @@ def shell_slurp(cmd_str, working_dir=".", fail_func=None):
 	if (result.returncode and fail_func):
 		return fail_func(result)
 
+	# print(cmd_str)
+	# print("return code: {result.returncode}")
+	# if (result.stdout):
+	#	print(result.stdout.decode("utf-8"))
+	# if (result.stderr):
+	#	print(result.stderr.decode("utf-8"))
+
 	return result.stdout.decode("utf-8")
 
 
-def files_from_repo(repo_dir, repo_url):
+def files_from_repo(repo_dir, repo_url, branch):
 	cmd = f"git clone {repo_url} {repo_dir}"
 	shell_slurp(cmd)
 
-	cmd = "git branch | grep \* | cut -d' ' -f2"
-	branch = shell_slurp(cmd, repo_dir).rstrip()
+	cmd = f"git switch {branch}"
+	shell_slurp(cmd, repo_dir)
+
+	cmd = f"git fetch --all"
+	shell_slurp(cmd, repo_dir)
+
+	cmd = f"git reset --hard origin/{branch}"
+	shell_slurp(cmd, repo_dir)
 
 	cmd = f"git ls-tree -r --name-only {branch}"
 	files = shell_slurp(cmd, repo_dir).splitlines()
@@ -106,6 +119,32 @@ def set_used(checks, name, files):
 		set_used_for_file(checks, name, file)
 
 
+def remove_unused(checks):
+	unused = []
+	for url in checks.keys():
+		used = {}
+		for name in checks[url]["used"]:
+			if len(checks[url]["used"][name]) > 0:
+				used[name] = True
+			else:
+				used[name] = False
+
+		used_at_all = False
+		for name in used.keys():
+			if (used[name]):
+				used_at_all = True
+			else:
+				checks[url]["used"].pop(name, None)
+
+		if not (used_at_all):
+			unused.append(url)
+
+	for url in unused:
+		checks.pop(url, None)
+
+	return checks
+
+
 def sort_by_key(stuff):
 	sorted_elems = sorted(stuff.items(), key=lambda el: el[0])
 	return {key: val for key, val in sorted_elems}
@@ -138,9 +177,11 @@ class System_Context:
 def read_repos_files(repos, ctx=System_Context()):
 	repo_files = {}
 
-	for repo_name, repo_url in repos.items():
-		ctx.log(repo_name, repo_url)
-		files = files_from_repo(repo_name, repo_url)
+	for repo_name, repo_data in repos.items():
+		repo_url = repo_data.get("url")
+		branch = repo_data.get("branch")
+		ctx.log(repo_name, repo_url, branch)
+		files = files_from_repo(repo_name, repo_url, branch)
 		repo_files[repo_name] = files
 
 	return repo_files
@@ -170,6 +211,8 @@ def url_check_all(checks, repos_files, ctx=System_Context()):
 
 	for repo_name, files in repos_files.items():
 		set_used(checks, repo_name, files)
+
+	checks = remove_unused(checks)
 
 	checks = sort_by_key(checks)
 

@@ -39,8 +39,9 @@ class TestSum(unittest.TestCase):
 	def test_files_from_repo(self):
 		repo_name = "blog.publiccode.net"
 		repo_url = "https://github.com/publiccodenet/blog.git"
+		branch = "main"
 
-		files = uc.files_from_repo(repo_name, repo_url)
+		files = uc.files_from_repo(repo_name, repo_url, branch)
 		num_files = len(files)
 		self.assertTrue(num_files > 100, f"too few files: {num_files}")
 
@@ -143,16 +144,56 @@ class TestSum(unittest.TestCase):
 	def test_read_repos_files(self):
 		repo_name = "blog.publiccode.net"
 		repo_url = "https://github.com/publiccodenet/blog.git"
-		repos = {repo_name: repo_url}
+		repos = {repo_name: {"url": repo_url, "branch": "main"}}
 		repo_files = uc.read_repos_files(repos, Test_Context())
 		self.assertIn("README.md", repo_files[repo_name])
+
+	def test_remove_unused(self):
+		url3 = "https://example.org/three.html"
+		checks = {
+				"https://example.org/one.html": {
+				"checks": {
+				"status": 200,
+				"200": "2023-05-04 08:55:37.504684"
+				},
+				"used": {
+				"foo": ["posts/stuff.html"]
+				}
+				},
+				"https://example.org/obsolete.html": {
+				"checks": {
+				"status": 200,
+				"200": "2023-05-04 08:55:37.694390"
+				},
+				"used": {
+				"foo": []
+				}
+				},
+				url3: {
+				"checks": {
+				"status": 200,
+				"200": "2023-05-04 08:55:37.846483"
+				},
+				"used": {
+				"foo": ["posts/more-stuff.html"],
+				"bar": []
+				}
+				},
+		}
+		checks = uc.remove_unused(checks)
+		urls = checks.keys()
+		self.assertIn("https://example.org/one.html", urls)
+		self.assertNotIn("https://example.org/obsolete.html", urls)
+		self.assertIn("https://example.org/three.html", urls)
+		self.assertEqual(len(checks[url3]["used"].keys()), 1)
 
 	def test_url_check_all(self):
 
 		cmd = "mkdir -pv test-data && echo \
 			'One [example link](https://example.org/) in it.\
 			 And another [example link](https://example.net/) in it.\
-			 And a [bogus link](https://www.bogus.gov/bad) in it.'\
+			 And a [bogus link](https://www.bogus.gov/bad) in it.\
+			 And another [bogus link](https://www.bogus.gov/bad2) in it.'\
 			> test-data/foo.md"
 
 		uc.shell_slurp(cmd)
@@ -239,7 +280,7 @@ class TestSum(unittest.TestCase):
 				}
 				},
 				"used": {
-				"test-data": []
+				"test-data": ["foo.md"]
 				}
 				}
 		}
