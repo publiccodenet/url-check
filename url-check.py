@@ -5,6 +5,7 @@
 # defaults
 checks_json = "url-check-checks.json"
 repos_json = "url-check-repos.json"
+check_fails_json = "url-check-fails.json"
 
 ignore_patterns = [
 		'^http[s]\?://localhost',
@@ -227,10 +228,20 @@ def url_check_all(checks, repos_files, ctx=System_Context()):
 	return checks
 
 
+def extract_fails(checks):
+	fails = {}
+	for url, check in checks.items():
+		if check["checks"]["status"] != 200:
+			fails[url] = check
+	return fails
+
+
 def main():  # pragma: no cover
 	checks = read_json(checks_json)
 	repos_files = read_repos_files(read_json(repos_json))
-	write_json(checks_json, url_check_all(checks, repos_files))
+	checks = url_check_all(checks, repos_files)
+	write_json(checks_json, checks)
+	write_json(check_fails_json, extract_fails(checks))
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -288,6 +288,11 @@ class TestSum(unittest.TestCase):
 		self.maxDiff = None
 		self.assertEqual(checks, expected)
 
+		expected.pop("https://example.net/")
+		expected.pop("https://example.org/")
+		fails = uc.extract_fails(checks)
+		self.assertEqual(fails, expected)
+
 
 if __name__ == "__main__":
 	unittest.main()
