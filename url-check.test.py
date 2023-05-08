@@ -13,6 +13,7 @@ class Test_Context:
 
 	def __init__(self):
 		self.now_calls = 0
+		self.verbose = False
 
 	def now(self):
 		self.now_calls = self.now_calls + 1
@@ -21,6 +22,10 @@ class Test_Context:
 
 	# ignore log statements
 	def log(self, *args, **kwargs):
+		return
+
+	# ignore log statements
+	def debug(self, *args, **kwargs):
 		return
 
 
@@ -33,8 +38,11 @@ class TestSum(unittest.TestCase):
 		x = re.search(rexp, when)
 		self.assertEqual(x.string, when)
 
+		ctx.debug("THIS SHOULD NOT BE SEEN", end="")
 		# only check that it doesn't crash
 		ctx.log("", end="")
+		ctx.verbose = True
+		ctx.debug("", end="")
 
 	def test_files_from_repo(self):
 		repo_name = "blog.publiccode.net"

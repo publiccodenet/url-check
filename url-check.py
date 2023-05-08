@@ -2,24 +2,45 @@
 # SPDX-License-Identifier: CC0-1.0
 # SPDX-FileCopyrightText: 2023 The Foundation for Public Code <info@publiccode.net>
 
-# defaults
-checks_json = "url-check-checks.json"
-repos_json = "url-check-repos.json"
-check_fails_json = "url-check-fails.json"
-
-ignore_patterns = [
-		'^http[s]\?://localhost',
-		'^http[s]\?://127.0.0.1',
-		'^http[s]\?://web.archive.org',
-]
-
+import datetime
+import docopt
 import json
 import os
 import re
 import requests
 import subprocess
 import sys
-import datetime
+
+url_check_version = "0.0.0"
+
+### defaults
+checks_json = "url-check-checks.json"
+repos_json = "url-check-repos.json"
+check_fails_json = "url-check-fails.json"
+
+docopt_str = f"""
+{sys.argv[0]}: Checker for URLs found in git repositories
+
+Usage:
+        {sys.argv[0]} [options]
+
+Options:
+        -r PATH, --repos=PATH   path to the repos JSON file,
+                                [default: {repos_json}]
+        -c PATH, --checks=PATH  path to the existing JSON checks file,
+                                [default: {checks_json}]
+
+        -h, --help              Prints this message
+        -V, --version           Prints the version ({url_check_version})
+        -v, --verbose           Debug output
+
+DETAILS:
+
+The format of the {repos_json} is ...
+
+The format of the {checks_json} is ...
+
+"""
 
 
 def write_json(json_file, obj):
@@ -76,12 +97,19 @@ def files_from_repo(repo_dir, repo_url, branch):
 	return files
 
 
-def urls_from(workdir, file):
+def urls_from(workdir, file, additional_ignore_patters=[]):
 	found = []
 	cmd_str = f"grep --extended-regexp --only-matching \
 		'(http|https)://[a-zA-Z0-9\./\?=_%:\-]*' \
 		'{file}' \
 		| sort --unique"
+
+	ignore_patterns = [
+			'^http[s]\?://localhost',
+			'^http[s]\?://127.0.0.1',
+			'^http[s]\?://web.archive.org',
+	]
+	ignore_patterns.extend(additional_ignore_patters)
 
 	for pattern in ignore_patterns:
 		cmd_str += f" | grep --invert-match '{pattern}'"
@@ -168,11 +196,17 @@ def status_code_for_url(url):
 #
 class System_Context:
 
+	verbose = False
+
 	def now(self):
 		return str(datetime.datetime.utcnow())
 
 	def log(self, *args, **kwargs):
 		print(*args, **kwargs)
+
+	def debug(self, *args, **kwargs):
+		if (self.verbose):
+			print(*args, **kwargs)
 
 
 def read_repos_files(repos, ctx=System_Context()):
@@ -236,9 +270,16 @@ def extract_fails(checks):
 	return fails
 
 
-def main():  # pragma: no cover
-	checks = read_json(checks_json)
-	repos_files = read_repos_files(read_json(repos_json))
+def main(sys_argv=sys.argv[1:], ctx=System_Context()):  # pragma: no cover
+	args = docopt.docopt(docopt_str, argv=sys_argv)
+	ctx.verbose = args['--verbose']
+	ctx.debug(args)
+	if args['--version']:
+		ctx.log(f"version {url_check_version}")
+		return
+
+	checks = read_json(args['--checks'])
+	repos_files = read_repos_files(read_json(args['--repos']))
 	checks = url_check_all(checks, repos_files)
 	write_json(checks_json, checks)
 	write_json(check_fails_json, extract_fails(checks))
