@@ -314,39 +314,39 @@ class TestSum(unittest.TestCase):
 		fails = uc.extract_fails(checks)
 		self.assertEqual(fails, expected)
 
-
-
 	def test_main_version(self):
-		argv = [ 'url-check', '--version' ]
-		ctx =  Test_Context(capture=True)
+		argv = ['url-check', '--version']
+		ctx = Test_Context(capture=True)
 		uc.main(argv, ctx)
 		self.assertIn(uc.url_check_version, ctx.out)
 
-#	def test_main(self):
-#		repos_dir = '/tmp/url-check-tests/gits'
-#		repos_cfg = os.path.join(repos_dir, 'test-repos.json')
-#		uc.write_json(repos_cfg,
-#		{
-#			"url-check": {
-#				"url": "https://github.com/publiccodenet/url-check.git",
-#				"branch": "main"
-#			}
-#		})
-#		checks_json = os.path.join(repos_dir, 'test-repos-checks.json')
-#		uc.write_json(checks_json, {})
-#
-#		argv = [
-#			'url-check',
-#			'--verbose',
-#			f'--gits-dir={repos_dir}',
-#			f'--repos={repos_cfg}',
-#			f'--checks={checks_json}',
-#		]
-#		ctx =  Test_Context(capture=True)
-#		uc.main(argv, ctx)
-#		checks = uc.read_json(checks_json)
-#		print(ctx.out)
-#		self.assertEqual(["foo"], checks)
+	def test_main(self):
+		repos_dir = '/tmp/url-check-tests/gits'
+		repos_cfg = os.path.join(repos_dir, 'test-repos.json')
+		uc.write_json(
+				repos_cfg, {
+				"url-check": {
+				"url": "https://github.com/publiccodenet/url-check.git",
+				"branch": "main"
+				}
+				})
+		checks_json = os.path.join(repos_dir, 'test-repos-checks.json')
+		uc.write_json(checks_json, {})
+
+		argv = [
+				'url-check',
+				'--verbose',
+				f'--gits-dir={repos_dir}',
+				f'--repos={repos_cfg}',
+				f'--checks={checks_json}',
+		]
+		ctx = Test_Context()
+		uc.main(argv, ctx)
+		checks = uc.read_json(checks_json)
+		check = checks["https://example.org/"]
+		self.assertEqual(200, check["checks"]["status"])
+		check = checks["https://example.org/one.html"]
+		self.assertEqual(404, check["checks"]["status"])
 
 
 if __name__ == "__main__":

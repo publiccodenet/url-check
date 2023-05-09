@@ -14,10 +14,11 @@ import sys
 url_check_version = "0.0.0"
 
 ### defaults
-checks_json = "url-check-checks.json"
-repos_json = "url-check-repos.json"
+default_checks_json = "url-check-checks.json"
+default_repos_json = "url-check-repos.json"
+default_gits_dir = "/tmp/url-check/gits"
+
 check_fails_json = "url-check-fails.json"
-gits_dir = "/tmp/url-check/gits"
 
 docopt_str = f"""
 {sys.argv[0]}: Checker for URLs found in git repositories
@@ -27,11 +28,11 @@ Usage:
 
 Options:
         -g DIR, --gits-dir=DIR  directory in to which to clone repositories
-                                [default: {gits_dir}]
+                                [default: {default_gits_dir}]
         -r PATH, --repos=PATH   path to the repos JSON file,
-                                [default: {repos_json}]
+                                [default: {default_repos_json}]
         -c PATH, --checks=PATH  path to the existing JSON checks file,
-                                [default: {checks_json}]
+                                [default: {default_checks_json}]
 
         -h, --help              Prints this message
         -V, --version           Prints the version ({url_check_version})
@@ -39,9 +40,9 @@ Options:
 
 DETAILS:
 
-The format of the {repos_json} is ...
+The format of the {default_repos_json} is ...
 
-The format of the {checks_json} is ...
+The format of the {default_checks_json} is ...
 
 """
 
@@ -286,9 +287,7 @@ def extract_fails(checks):
 	return fails
 
 
-def main(sys_argv=sys.argv, ctx=None):  # pragma: no cover
-	if ctx == None:
-		ctx = System_Context()
+def main(sys_argv=sys.argv, ctx=System_Context()):
 	args = docopt.docopt(docopt_str, argv=sys_argv[1:])
 	ctx.verbose = args['--verbose']
 	ctx.debug(args)
@@ -300,11 +299,11 @@ def main(sys_argv=sys.argv, ctx=None):  # pragma: no cover
 	repos_cfg = args['--repos']
 	checks_path = args['--checks']
 
-	repos_files = read_repos_files(repos_dir, read_json(repos_cfg))
+	repos_files = read_repos_files(repos_dir, read_json(repos_cfg), ctx)
+	orig_checks = read_json(checks_path)
+	checks = url_check_all(repos_dir, orig_checks, repos_files, ctx)
 
-	checks = url_check_all(repos_dir, read_json(checks_path), repos_files)
-
-	write_json(checks_json, checks)
+	write_json(checks_path, checks)
 	write_json(check_fails_json, extract_fails(checks))
 
 
