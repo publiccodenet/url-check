@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 # SPDX-FileCopyrightText: 2023 The Foundation for Public Code <info@publiccode.net>
 
+import json
 import os
 import re
 import subprocess
@@ -55,23 +56,22 @@ class TestSum(unittest.TestCase):
 
 	def test_files_from_repo(self):
 		repos_dir = '/tmp/url-check-tests/gits'
-		repo_name = "blog.publiccode.net"
-		repo_url = "https://github.com/publiccodenet/blog.git"
+		repo_name = "url-check"
+		repo_url = "https://github.com/publiccodenet/url-check.git"
 		branch = "main"
 
 		files = uc.files_from_repo(repos_dir, repo_name, repo_url, branch)
 		num_files = len(files)
-		self.assertTrue(num_files > 100, f"too few files: {num_files}")
+		self.assertGreater(num_files, 5, f"too few files: {num_files}")
 
 	def test_urls_from(self):
 		repos_dir = '/tmp/url-check-tests/gits'
-		name = "blog.publiccode.net"
+		name = "url-check"
 		workdir = os.path.join(repos_dir, name)
-		file = "README.md"
+		file = "url-check.test.py"
 		found = uc.urls_from(workdir, file)
-		self.assertIn("http://jekyllrb.com/", found)
-		self.assertIn("https://bundler.io/", found)
-		self.assertIn("https://pages.github.com/", found)
+		self.assertIn("https://example.org/", found)
+		self.assertIn("http://bogus.gov", found)
 
 	def test_clear_previous_used(self):
 		name1 = "blog.example.net"
@@ -103,14 +103,14 @@ class TestSum(unittest.TestCase):
 	def test_set_used(self):
 		checks = {}
 		repos_dir = "/tmp/url-check-tests/gits"
-		name = "blog.publiccode.net"
-		file = "README.md"
+		name = "url-check"
+		file = "url-check.test.py"
 		uc.set_used_for_file(checks, repos_dir, name, file)
 
-		self.assertIn("README.md",
-				checks["http://jekyllrb.com/"]["used"]["blog.publiccode.net"])
-		self.assertIn("README.md",
-				checks["https://bundler.io/"]["used"]["blog.publiccode.net"])
+		# print('checks: ', json.dumps(checks, indent=4) + "\n")
+
+		self.assertIn(file, checks["https://example.org/"]["used"][name])
+		self.assertIn(file, checks["http://bogus.gov"]["used"][name])
 
 	def test_sort_by_key(self):
 		stuff = {
@@ -163,12 +163,12 @@ class TestSum(unittest.TestCase):
 		self.assertEqual(context["err"], 42)
 
 	def test_read_repos_files(self):
-		repo_name = "blog.publiccode.net"
-		repo_url = "https://github.com/publiccodenet/blog.git"
+		repo_name = "url-check"
+		repo_url = "https://github.com/publiccodenet/url-check.git"
 		repos = {repo_name: {"url": repo_url, "branch": "main"}}
 		repos_dir = '/tmp/url-check-tests/gits'
 		repo_files = uc.read_repos_files(repos_dir, repos, Test_Context())
-		self.assertIn("README.md", repo_files[repo_name])
+		self.assertIn("url-check.test.py", repo_files[repo_name])
 
 	def test_remove_unused(self):
 		url3 = "https://example.org/three.html"
