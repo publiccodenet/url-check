@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: CC0-1.0
 # SPDX-FileCopyrightText: 2023 The Foundation for Public Code <info@publiccode.net>
 
-import unittest
-import subprocess
+import os
 import re
+import subprocess
+import unittest
 
 uc = __import__("url-check")
 
@@ -45,16 +46,19 @@ class TestSum(unittest.TestCase):
 		ctx.debug("", end="")
 
 	def test_files_from_repo(self):
+		repos_dir = '/tmp/url-check-tests/gits'
 		repo_name = "blog.publiccode.net"
 		repo_url = "https://github.com/publiccodenet/blog.git"
 		branch = "main"
 
-		files = uc.files_from_repo(repo_name, repo_url, branch)
+		files = uc.files_from_repo(repos_dir, repo_name, repo_url, branch)
 		num_files = len(files)
 		self.assertTrue(num_files > 100, f"too few files: {num_files}")
 
 	def test_urls_from(self):
-		workdir = "blog.publiccode.net"
+		repos_dir = '/tmp/url-check-tests/gits'
+		name = "blog.publiccode.net"
+		workdir = os.path.join(repos_dir, name)
 		file = "README.md"
 		found = uc.urls_from(workdir, file)
 		self.assertIn("http://jekyllrb.com/", found)
@@ -90,9 +94,10 @@ class TestSum(unittest.TestCase):
 
 	def test_set_used(self):
 		checks = {}
+		repos_dir = "/tmp/url-check-tests/gits"
 		name = "blog.publiccode.net"
 		file = "README.md"
-		uc.set_used_for_file(checks, name, file)
+		uc.set_used_for_file(checks, repos_dir, name, file)
 
 		self.assertIn("README.md",
 				checks["http://jekyllrb.com/"]["used"]["blog.publiccode.net"])
@@ -153,7 +158,8 @@ class TestSum(unittest.TestCase):
 		repo_name = "blog.publiccode.net"
 		repo_url = "https://github.com/publiccodenet/blog.git"
 		repos = {repo_name: {"url": repo_url, "branch": "main"}}
-		repo_files = uc.read_repos_files(repos, Test_Context())
+		repos_dir = '/tmp/url-check-tests/gits'
+		repo_files = uc.read_repos_files(repos_dir, repos, Test_Context())
 		self.assertIn("README.md", repo_files[repo_name])
 
 	def test_remove_unused(self):
@@ -196,7 +202,6 @@ class TestSum(unittest.TestCase):
 		self.assertEqual(len(checks[url3]["used"].keys()), 1)
 
 	def test_url_check_all(self):
-
 		cmd = "mkdir -pv test-data && echo \
 			'One [example link](https://example.org/) in it.\
 			 And another [example link](https://example.net/) in it.\
@@ -292,7 +297,7 @@ class TestSum(unittest.TestCase):
 				}
 				}
 		}
-		checks = uc.url_check_all(checks, repos_files, Test_Context())
+		checks = uc.url_check_all('.', checks, repos_files, Test_Context())
 		self.maxDiff = None
 		self.assertEqual(checks, expected)
 

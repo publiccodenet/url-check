@@ -17,6 +17,7 @@ url_check_version = "0.0.0"
 checks_json = "url-check-checks.json"
 repos_json = "url-check-repos.json"
 check_fails_json = "url-check-fails.json"
+gits_dir = "/tmp/url-check/gits"
 
 docopt_str = f"""
 {sys.argv[0]}: Checker for URLs found in git repositories
@@ -25,6 +26,8 @@ Usage:
         {sys.argv[0]} [options]
 
 Options:
+        -g DIR, --gits-dir=DIR  directory in to which to clone repositories
+                                [default: {gits_dir}]
         -r PATH, --repos=PATH   path to the repos JSON file,
                                 [default: {repos_json}]
         -c PATH, --checks=PATH  path to the existing JSON checks file,
@@ -57,7 +60,11 @@ def read_json(json_file):
 
 # spawn a shell to run the commmand(s),
 # returns the text which would have been output to the screen
-def shell_slurp(cmd_str, working_dir=".", fail_func=None):
+def shell_slurp(cmd_str, working_dir=os.getcwd(), ctx=None, fail_func=None):
+	if ctx == None:
+		ctx = System_Context()
+	ctx.debug(f"working_dir=${working_dir}")
+	ctx.debug(cmd_str)
 	result = subprocess.run(
 			cmd_str,
 			shell=True,
@@ -65,6 +72,7 @@ def shell_slurp(cmd_str, working_dir=".", fail_func=None):
 			stderr=subprocess.STDOUT,
 			cwd=working_dir,
 	)
+	ctx.debug(f"return code: {result.returncode}")
 	if (result.returncode and fail_func):
 		return fail_func(result)
 
@@ -75,24 +83,31 @@ def shell_slurp(cmd_str, working_dir=".", fail_func=None):
 	# if (result.stderr):
 	#	print(result.stderr.decode("utf-8"))
 
-	return result.stdout.decode("utf-8")
+	text = result.stdout.decode("utf-8")
+	ctx.debug(text)
+	return text
 
 
-def files_from_repo(repo_dir, repo_url, branch):
-	cmd = f"git clone {repo_url} {repo_dir}"
-	shell_slurp(cmd)
+def files_from_repo(repos_basedir, repo_name, repo_url, branch, ctx=None):
+
+	cmd = f"mkdir -pv {repos_basedir}"
+	shell_slurp(cmd, os.getcwd(), ctx)
+
+	cmd = f"git clone {repo_url} {repo_name}"
+	shell_slurp(cmd, repos_basedir, ctx)
+	repo_dir = os.path.join(repos_basedir, repo_name)
 
 	cmd = f"git switch {branch}"
-	shell_slurp(cmd, repo_dir)
+	shell_slurp(cmd, repo_dir, ctx)
 
 	cmd = f"git fetch --all"
-	shell_slurp(cmd, repo_dir)
+	shell_slurp(cmd, repo_dir, ctx)
 
 	cmd = f"git reset --hard origin/{branch}"
-	shell_slurp(cmd, repo_dir)
+	shell_slurp(cmd, repo_dir, ctx)
 
 	cmd = f"git ls-tree -r --name-only {branch}"
-	files = shell_slurp(cmd, repo_dir).splitlines()
+	files = shell_slurp(cmd, repo_dir, ctx).splitlines()
 
 	return files
 
@@ -129,8 +144,9 @@ def clear_previous_used(checks, name):
 			checks[url]["used"][name] = []
 
 
-def set_used_for_file(checks, name, file):
-	urls = urls_from(name, file)
+def set_used_for_file(checks, repos_dir, name, file):
+	repo_dir = os.path.join(repos_dir, name)
+	urls = urls_from(repo_dir, file)
 	for url in urls:
 		if url not in checks.keys():
 			checks[url] = {}
@@ -142,10 +158,10 @@ def set_used_for_file(checks, name, file):
 			checks[url]["used"][name] += [file]
 
 
-def set_used(checks, name, files):
+def set_used(checks, repos_dir, name, files):
 	clear_previous_used(checks, name)
 	for file in files:
-		set_used_for_file(checks, name, file)
+		set_used_for_file(checks, repos_dir, name, file)
 
 
 def remove_unused(checks):
@@ -209,14 +225,14 @@ class System_Context:
 			print(*args, **kwargs)
 
 
-def read_repos_files(repos, ctx=System_Context()):
+def read_repos_files(repos_dir, repos, ctx=System_Context()):
 	repo_files = {}
 
 	for repo_name, repo_data in repos.items():
 		repo_url = repo_data.get("url")
 		branch = repo_data.get("branch")
 		ctx.log(repo_name, repo_url, branch)
-		files = files_from_repo(repo_name, repo_url, branch)
+		files = files_from_repo(repos_dir, repo_name, repo_url, branch, ctx)
 		repo_files[repo_name] = files
 
 	return repo_files
@@ -242,10 +258,10 @@ def update_status(check, status_code, when):
 		check["fail"]["to-code"] = status_code
 
 
-def url_check_all(checks, repos_files, ctx=System_Context()):
+def url_check_all(repos_dir, checks, repos_files, ctx=System_Context()):
 
 	for repo_name, files in repos_files.items():
-		set_used(checks, repo_name, files)
+		set_used(checks, repos_dir, repo_name, files)
 
 	checks = remove_unused(checks)
 
@@ -270,7 +286,9 @@ def extract_fails(checks):
 	return fails
 
 
-def main(sys_argv=sys.argv[1:], ctx=System_Context()):  # pragma: no cover
+def main(sys_argv=sys.argv[1:], ctx=None):  # pragma: no cover
+	if ctx == None:
+		ctx = System_Context()
 	args = docopt.docopt(docopt_str, argv=sys_argv)
 	ctx.verbose = args['--verbose']
 	ctx.debug(args)
@@ -278,9 +296,14 @@ def main(sys_argv=sys.argv[1:], ctx=System_Context()):  # pragma: no cover
 		ctx.log(f"version {url_check_version}")
 		return
 
-	checks = read_json(args['--checks'])
-	repos_files = read_repos_files(read_json(args['--repos']))
-	checks = url_check_all(checks, repos_files)
+	repos_dir = args['--gits-dir']
+	repos_cfg = args['--repos']
+	checks_path = args['--checks']
+
+	repos_files = read_repos_files(repos_dir, read_json(repos_cfg))
+
+	checks = url_check_all(repos_dir, read_json(checks_path), repos_files)
+
 	write_json(checks_json, checks)
 	write_json(check_fails_json, extract_fails(checks))
 
