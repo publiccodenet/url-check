@@ -286,10 +286,10 @@ def extract_fails(checks):
 	return fails
 
 
-def main(sys_argv=sys.argv[1:], ctx=None):  # pragma: no cover
+def main(sys_argv=sys.argv, ctx=None):  # pragma: no cover
 	if ctx == None:
 		ctx = System_Context()
-	args = docopt.docopt(docopt_str, argv=sys_argv)
+	args = docopt.docopt(docopt_str, argv=sys_argv[1:])
 	ctx.verbose = args['--verbose']
 	ctx.debug(args)
 	if args['--version']:
