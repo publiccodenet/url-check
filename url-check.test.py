@@ -109,7 +109,7 @@ class TestSum(unittest.TestCase):
 		file = "url-check.test.py"
 		config = uc.read_json('url-check-config.json')
 
-		add_ignore = config.get("ignore_patterns")
+		add_ignore = config.get("ignore_patterns").keys()
 		uc.set_used_for_file(checks, gits_dir, name, file, add_ignore)
 
 		self.assertNotIn("https://twitter.com", checks)

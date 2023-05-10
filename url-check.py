@@ -299,7 +299,8 @@ def main(sys_argv=sys.argv, ctx=System_Context()):
 
 	config_obj = read_json(cfg_path)
 	repos_info = config_obj["repositories"]
-	add_ignore_patterns = config_obj.get("ignore_patterns", [])
+	ignore_patterns_map = config_obj.get("ignore_patterns", {})
+	add_ignore_patterns = ignore_patterns_map.keys()
 
 	repos_files = read_repos_files(gits_dir, repos_info, ctx)
 

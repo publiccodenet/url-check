@@ -1,23 +1,13 @@
 {
-    "repositories" : {
-        "standard-for-public-code": {
-            "url": "https://github.com/publiccodenet/standard.git",
-            "branch": "main"
-        },
-        "blog.publiccode.net": {
-            "url": "https://github.com/publiccodenet/blog.git",
+    "repositories": {
+        "url-check": {
+            "url": "https://github.com/publiccodenet/url-check.git",
             "branch": "main"
         }
     },
-    "ignore_patterns" : [
-        "^http[s]\\?://twitter\\.com",
-        "github\\.com/.*/edit/",
-        "docs\\.github\\.com/",
-        "plausible\\.io/js/plausible\\.js",
-        "opensource\\.org",
-        "belastingdienst\\.nl/wps/wcm/connect/bldcontenten",
-        "reclameland\\.nl/drukken/softcover-boeken",
-        "www\\.dta\\.gov\\.au/help-and-advice",
-        "amsterdam\\.nl/en/"
-    ]
+    "ignore_patterns": {
+        "^http[s]\\?://twitter\\.com": "302; does not serve scripts",
+        "^http[s]\\?://github\\.com/.*/edit/": "may point to yet-to-exist page",
+        "^http[s]\\?://docs\\.github\\.com/": "seems blocked as DoS protection"
+    }
 }
