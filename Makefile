@@ -14,8 +14,8 @@ SHELL=/bin/bash
 default: check-all
 
 .PHONY: run
-run: url-check.py url-check-config.json
-	./url-check.py
+run: url-check.py url-check-run-config.json
+	./url-check.py --config=url-check-run-config.json
 
 url-check.test.py: url-check.py
 
@@ -50,8 +50,15 @@ check-coverage: .coverage
 	}
 	@echo "SUCCESS $@"
 
+.PHONY: test
+test: run
+	if [ $$(wc -l url-check-fails.json | cut -f1 -d' ') -gt 1 ]; then \
+		false; \
+	fi
+	@echo "SUCCESS $@"
+
 .PHONY: check-all
-check-all: check check-coverage
+check-all: check check-coverage test
 	@echo "SUCCESS $@"
 
 htmlcov/url-check_py.html: .coverage
