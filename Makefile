@@ -36,14 +36,15 @@ COVERAGE_PERCENT_CMD=\
  | awk '{print $$4}' \
  | sed 's/%//'`
 
-COVERAGE_THRESHOLD=100
+MIN_COVERAGE_PCT_THRESHOLD=100
 
 .PHONY: check-coverage
 check-coverage: .coverage
 	{ \
 		coverage report url-check.py; \
 		COVERAGE_PERCENT=$(COVERAGE_PERCENT_CMD); \
-		if [ $$COVERAGE_PERCENT -lt $(COVERAGE_THRESHOLD) ]; then \
+		if [ $$COVERAGE_PERCENT -lt $(MIN_COVERAGE_PCT_THRESHOLD) ]; \
+		then \
 			false; \
 		fi \
 	}
