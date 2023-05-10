@@ -65,7 +65,7 @@ def read_json(json_file):
 def shell_slurp(cmd_str, working_dir=os.getcwd(), ctx=None, fail_func=None):
 	if ctx == None:
 		ctx = System_Context()
-	ctx.debug(f"working_dir=${working_dir}")
+	ctx.debug(f"working_dir={working_dir}")
 	ctx.debug(cmd_str)
 	result = subprocess.run(
 			cmd_str,
@@ -107,9 +107,9 @@ def files_from_repo(repos_basedir, repo_name, repo_url, branch, ctx=None):
 	return files
 
 
-def urls_from(workdir, file, user_ignore_patterns=[]):
+def urls_from(workdir, file, user_ignore_patterns=[], ctx=None):
 	found = []
-	cmd_str = f"grep --extended-regexp --only-matching \
+	cmd_str = f"grep --extended-regexp --only-matching --text \
 		'(http|https)://[a-zA-Z0-9\./\?=_%:\-]*' \
 		'{file}' \
 		| sort --unique"
@@ -124,7 +124,7 @@ def urls_from(workdir, file, user_ignore_patterns=[]):
 	for pattern in ignore_patterns:
 		cmd_str += f" | grep --invert-match '{pattern}'"
 
-	urls = shell_slurp(cmd_str, workdir).splitlines()
+	urls = shell_slurp(cmd_str, workdir, ctx).splitlines()
 	for url in urls:
 		# ignore 'binary file matches' messages, only grab URLs
 		if url.startswith("http"):
@@ -139,9 +139,9 @@ def clear_previous_used(checks, name):
 			checks[url]["used"][name] = []
 
 
-def set_used_for_file(checks, gits_dir, name, file, ignore_patterns):
+def set_used_for_file(checks, gits_dir, name, file, ignore_patterns, ctx):
 	repo_dir = os.path.join(gits_dir, name)
-	urls = urls_from(repo_dir, file, ignore_patterns)
+	urls = urls_from(repo_dir, file, ignore_patterns, ctx)
 	for url in urls:
 		if url not in checks.keys():
 			checks[url] = {}
@@ -153,10 +153,10 @@ def set_used_for_file(checks, gits_dir, name, file, ignore_patterns):
 			checks[url]["used"][name] += [file]
 
 
-def set_used(checks, gits_dir, name, files, ignore_patterns):
+def set_used(checks, gits_dir, name, files, ignore_patterns, ctx):
 	clear_previous_used(checks, name)
 	for file in files:
-		set_used_for_file(checks, gits_dir, name, file, ignore_patterns)
+		set_used_for_file(checks, gits_dir, name, file, ignore_patterns, ctx)
 
 
 def remove_unused(checks):
@@ -260,19 +260,23 @@ def url_check_all(gits_dir,
 		ctx=System_Context()):
 
 	for repo_name, files in repos_files.items():
-		set_used(checks, gits_dir, repo_name, files, ignore_patterns)
+		ctx.log(repo_name, "contains", len(files), "files")
+		ctx.debug(files)
+		set_used(checks, gits_dir, repo_name, files, ignore_patterns, ctx)
 
+	ctx.debug("checks length:", len(checks), "before unused removed")
 	checks = remove_unused(checks)
+	ctx.log("performing", len(checks), "checks")
 
 	checks = sort_by_key(checks)
 
 	for url, data in checks.items():
+		ctx.log("")
 		when = ctx.now()
 		ctx.log(when, url)
 		status_code = status_code_for_url(url)
 		ctx.log(status_code, url)
 		update_status(checks[url]["checks"], status_code, when)
-		ctx.log("")
 
 	return checks
 

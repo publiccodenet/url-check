@@ -103,14 +103,15 @@ class TestSum(unittest.TestCase):
 		self.assertEqual(name2used, ["_posts/baz.md"])
 
 	def test_set_used(self):
+		ctx = Test_Context()
 		checks = {}
 		gits_dir = "/tmp/url-check-tests/gits"
 		name = "url-check"
 		file = "url-check.test.py"
 		config = uc.read_json('url-check-config.json')
 
-		add_ignore = config.get("ignore_patterns").keys()
-		uc.set_used_for_file(checks, gits_dir, name, file, add_ignore)
+		ignore = config.get("ignore_patterns").keys()
+		uc.set_used_for_file(checks, gits_dir, name, file, ignore, ctx)
 
 		self.assertNotIn("https://twitter.com", checks)
 
