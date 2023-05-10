@@ -10,8 +10,10 @@
 BROWSER ?= firefox
 SHELL=/bin/bash
 
+.PHONY: default
 default: check-all
 
+.PHONY: run
 run: url-check.py url-check-config.json
 	./url-check.py
 
@@ -21,9 +23,10 @@ check: url-check.test.py
 	./$<
 	@echo "SUCCESS $@"
 
-.coverage: url-check.test.py
+.coverage: url-check.test.py url-check.py
 	coverage run url-check.test.py
 
+.PHONY: coverage
 coverage: .coverage
 	coverage report url-check.py
 
@@ -35,6 +38,7 @@ COVERAGE_PERCENT_CMD=\
 
 COVERAGE_THRESHOLD=100
 
+.PHONY: check-coverage
 check-coverage: .coverage
 	{ \
 		coverage report url-check.py; \
@@ -45,20 +49,25 @@ check-coverage: .coverage
 	}
 	@echo "SUCCESS $@"
 
+.PHONY: check-all
 check-all: check check-coverage
 	@echo "SUCCESS $@"
 
 htmlcov/url-check_py.html: .coverage
 	coverage html url-check.py
 
+.PHONY: view-coverage
 view-coverage: htmlcov/url-check_py.html
 	$(BROWSER) htmlcov/url-check_py.html
 
+.PHONY: tidy
 tidy: url-check.py url-check.test.py
 	yapf3 --in-place $^
 
+.PHONY: clean
 clean:
 	rm -vf .coverage
 
+.PHONY: dist-clean
 dist-clean:
 	git clean -dxff
