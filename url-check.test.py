@@ -24,6 +24,7 @@ class Test_Context:
 		fraction = 100000 + self.now_calls
 		return "2023-03-13 14:00:00." + str(fraction)
 
+	# ignore log statements unless capture is set
 	def log(self, *args, **kwargs):
 		if (self.capture):
 			for arg in args:
@@ -33,7 +34,7 @@ class Test_Context:
 			self.out += "\n"
 		return
 
-	# ignore debug statements
+	# ignore debug statements unless verbose and capture
 	def debug(self, *args, **kwargs):
 		if self.verbose:
 			return self.log(args, kwargs)
@@ -55,23 +56,24 @@ class TestSum(unittest.TestCase):
 		ctx.debug("", end="")
 
 	def test_files_from_repo(self):
-		repos_dir = '/tmp/url-check-tests/gits'
+		gits_dir = '/tmp/url-check-tests/gits'
 		repo_name = "url-check"
 		repo_url = "https://github.com/publiccodenet/url-check.git"
 		branch = "main"
 
-		files = uc.files_from_repo(repos_dir, repo_name, repo_url, branch)
+		files = uc.files_from_repo(gits_dir, repo_name, repo_url, branch)
 		num_files = len(files)
 		self.assertGreater(num_files, 5, f"too few files: {num_files}")
 
 	def test_urls_from(self):
-		repos_dir = '/tmp/url-check-tests/gits'
+		gits_dir = '/tmp/url-check-tests/gits'
 		name = "url-check"
-		workdir = os.path.join(repos_dir, name)
+		workdir = os.path.join(gits_dir, name)
 		file = "url-check.test.py"
-		found = uc.urls_from(workdir, file)
+		our_ignore_patters = ['^http[s]\?://bogus.gov']
+		found = uc.urls_from(workdir, file, our_ignore_patters)
 		self.assertIn("https://example.org/", found)
-		self.assertIn("http://bogus.gov", found)
+		self.assertNotIn("http://bogus.gov", found)
 
 	def test_clear_previous_used(self):
 		name1 = "blog.example.net"
@@ -102,15 +104,20 @@ class TestSum(unittest.TestCase):
 
 	def test_set_used(self):
 		checks = {}
-		repos_dir = "/tmp/url-check-tests/gits"
+		gits_dir = "/tmp/url-check-tests/gits"
 		name = "url-check"
 		file = "url-check.test.py"
-		uc.set_used_for_file(checks, repos_dir, name, file)
+		config = uc.read_json('url-check-config.json')
 
-		# print('checks: ', json.dumps(checks, indent=4) + "\n")
+		add_ignore = config.get("ignore_patterns")
+		uc.set_used_for_file(checks, gits_dir, name, file, add_ignore)
 
-		self.assertIn(file, checks["https://example.org/"]["used"][name])
-		self.assertIn(file, checks["http://bogus.gov"]["used"][name])
+		self.assertNotIn("https://twitter.com", checks)
+
+		example_used = checks["https://example.org/"]["used"]
+		self.assertIn(file, example_used[name])
+		bogus_used = checks["http://bogus.gov"]["used"]
+		self.assertIn(file, bogus_used[name])
 
 	def test_sort_by_key(self):
 		stuff = {
@@ -163,11 +170,12 @@ class TestSum(unittest.TestCase):
 		self.assertEqual(context["err"], 42)
 
 	def test_read_repos_files(self):
+		gits_dir = '/tmp/url-check-tests/gits'
 		repo_name = "url-check"
 		repo_url = "https://github.com/publiccodenet/url-check.git"
 		repos = {repo_name: {"url": repo_url, "branch": "main"}}
-		repos_dir = '/tmp/url-check-tests/gits'
-		repo_files = uc.read_repos_files(repos_dir, repos, Test_Context())
+		ctx = Test_Context()
+		repo_files = uc.read_repos_files(gits_dir, repos, ctx)
 		self.assertIn("url-check.test.py", repo_files[repo_name])
 
 	def test_remove_unused(self):
@@ -212,9 +220,9 @@ class TestSum(unittest.TestCase):
 	def test_url_check_all(self):
 		cmd = "mkdir -pv test-data && echo \
 			'One [example link](https://example.org/) in it.\
-			 And another [example link](https://example.net/) in it.\
+			 And another [example link](https://example.net/).\
 			 And a [bogus link](https://www.bogus.gov/bad) in it.\
-			 And another [bogus link](https://www.bogus.gov/bad2) in it.'\
+			 And second [bogus link](https://www.bogus.gov/bad2).'\
 			> test-data/foo.md"
 
 		uc.shell_slurp(cmd)
@@ -305,7 +313,9 @@ class TestSum(unittest.TestCase):
 				}
 				}
 		}
-		checks = uc.url_check_all('.', checks, repos_files, Test_Context())
+		add_ignore = []
+		checks = uc.url_check_all('.', checks, repos_files, add_ignore,
+				Test_Context())
 		self.maxDiff = None
 		self.assertEqual(checks, expected)
 
@@ -321,24 +331,25 @@ class TestSum(unittest.TestCase):
 		self.assertIn(uc.url_check_version, ctx.out)
 
 	def test_main(self):
-		repos_dir = '/tmp/url-check-tests/gits'
-		repos_cfg = os.path.join(repos_dir, 'test-repos.json')
-		uc.write_json(
-				repos_cfg, {
+		gits_dir = '/tmp/url-check-tests/gits'
+		config_path = os.path.join(gits_dir, 'test-repos.json')
+		repo_url = "https://github.com/publiccodenet/url-check.git"
+		uc.write_json(config_path,
+				{"repositories": {
 				"url-check": {
-				"url": "https://github.com/publiccodenet/url-check.git",
+				"url": repo_url,
 				"branch": "main"
 				}
-				})
-		checks_json = os.path.join(repos_dir, 'test-repos-checks.json')
+				}})
+		checks_json = os.path.join(gits_dir, 'test-repos-checks.json')
 		uc.write_json(checks_json, {})
 
 		argv = [
 				'url-check',
 				'--verbose',
-				f'--gits-dir={repos_dir}',
-				f'--repos={repos_cfg}',
-				f'--checks={checks_json}',
+				f'--gits-dir={gits_dir}',
+				f'--config={config_path}',
+				f'--results={checks_json}',
 		]
 		ctx = Test_Context()
 		uc.main(argv, ctx)

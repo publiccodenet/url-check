@@ -1,0 +1,23 @@
+{
+    "repositories" : {
+        "standard-for-public-code": {
+            "url": "https://github.com/publiccodenet/standard.git",
+            "branch": "main"
+        },
+        "blog.publiccode.net": {
+            "url": "https://github.com/publiccodenet/blog.git",
+            "branch": "main"
+        }
+    },
+    "ignore_patterns" : [
+        "^http[s]\\?://twitter\\.com",
+        "github\\.com/.*/edit/",
+        "docs\\.github\\.com/",
+        "plausible\\.io/js/plausible\\.js",
+        "opensource\\.org",
+        "belastingdienst\\.nl/wps/wcm/connect/bldcontenten",
+        "reclameland\\.nl/drukken/softcover-boeken",
+        "www\\.dta\\.gov\\.au/help-and-advice",
+        "amsterdam\\.nl/en/"
+    ]
+}

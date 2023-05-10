@@ -12,7 +12,7 @@ SHELL=/bin/bash
 
 default: check-all
 
-run: url-check.py url-check-repos.json
+run: url-check.py url-check-config.json
 	./url-check.py
 
 url-check.test.py: url-check.py

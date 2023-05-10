@@ -14,8 +14,8 @@ import sys
 url_check_version = "0.0.0"
 
 ### defaults
-default_checks_json = "url-check-checks.json"
-default_repos_json = "url-check-repos.json"
+default_results_json = "url-check-results.json"
+default_config_json = "url-check-config.json"
 default_gits_dir = "/tmp/url-check/gits"
 
 check_fails_json = "url-check-fails.json"
@@ -29,10 +29,11 @@ Usage:
 Options:
         -g DIR, --gits-dir=DIR  directory in to which to clone repositories
                                 [default: {default_gits_dir}]
-        -r PATH, --repos=PATH   path to the repos JSON file,
-                                [default: {default_repos_json}]
-        -c PATH, --checks=PATH  path to the existing JSON checks file,
-                                [default: {default_checks_json}]
+        -c PATH, --config=PATH  path to the config JSON file,
+                                [default: {default_config_json}]
+        -r PATH, --results=PATH path to the JSON check results file, if the
+                                file already exists, it will be modified
+                                [default: {default_results_json}]
 
         -h, --help              Prints this message
         -V, --version           Prints the version ({url_check_version})
@@ -40,9 +41,9 @@ Options:
 
 DETAILS:
 
-The format of the {default_repos_json} is ...
+The format of the {default_config_json} is ...
 
-The format of the {default_checks_json} is ...
+The format of the {default_results_json} is ...
 
 """
 
@@ -77,13 +78,6 @@ def shell_slurp(cmd_str, working_dir=os.getcwd(), ctx=None, fail_func=None):
 	if (result.returncode and fail_func):
 		return fail_func(result)
 
-	# print(cmd_str)
-	# print("return code: {result.returncode}")
-	# if (result.stdout):
-	#	print(result.stdout.decode("utf-8"))
-	# if (result.stderr):
-	#	print(result.stderr.decode("utf-8"))
-
 	text = result.stdout.decode("utf-8")
 	ctx.debug(text)
 	return text
@@ -113,7 +107,7 @@ def files_from_repo(repos_basedir, repo_name, repo_url, branch, ctx=None):
 	return files
 
 
-def urls_from(workdir, file, additional_ignore_patters=[]):
+def urls_from(workdir, file, user_ignore_patterns=[]):
 	found = []
 	cmd_str = f"grep --extended-regexp --only-matching \
 		'(http|https)://[a-zA-Z0-9\./\?=_%:\-]*' \
@@ -125,7 +119,7 @@ def urls_from(workdir, file, additional_ignore_patters=[]):
 			'^http[s]\?://127.0.0.1',
 			'^http[s]\?://web.archive.org',
 	]
-	ignore_patterns.extend(additional_ignore_patters)
+	ignore_patterns.extend(user_ignore_patterns)
 
 	for pattern in ignore_patterns:
 		cmd_str += f" | grep --invert-match '{pattern}'"
@@ -145,9 +139,9 @@ def clear_previous_used(checks, name):
 			checks[url]["used"][name] = []
 
 
-def set_used_for_file(checks, repos_dir, name, file):
-	repo_dir = os.path.join(repos_dir, name)
-	urls = urls_from(repo_dir, file)
+def set_used_for_file(checks, gits_dir, name, file, ignore_patterns):
+	repo_dir = os.path.join(gits_dir, name)
+	urls = urls_from(repo_dir, file, ignore_patterns)
 	for url in urls:
 		if url not in checks.keys():
 			checks[url] = {}
@@ -159,10 +153,10 @@ def set_used_for_file(checks, repos_dir, name, file):
 			checks[url]["used"][name] += [file]
 
 
-def set_used(checks, repos_dir, name, files):
+def set_used(checks, gits_dir, name, files, ignore_patterns):
 	clear_previous_used(checks, name)
 	for file in files:
-		set_used_for_file(checks, repos_dir, name, file)
+		set_used_for_file(checks, gits_dir, name, file, ignore_patterns)
 
 
 def remove_unused(checks):
@@ -226,14 +220,14 @@ class System_Context:
 			print(*args, **kwargs)
 
 
-def read_repos_files(repos_dir, repos, ctx=System_Context()):
+def read_repos_files(gits_dir, repos, ctx=System_Context()):
 	repo_files = {}
 
 	for repo_name, repo_data in repos.items():
 		repo_url = repo_data.get("url")
 		branch = repo_data.get("branch")
 		ctx.log(repo_name, repo_url, branch)
-		files = files_from_repo(repos_dir, repo_name, repo_url, branch, ctx)
+		files = files_from_repo(gits_dir, repo_name, repo_url, branch, ctx)
 		repo_files[repo_name] = files
 
 	return repo_files
@@ -259,10 +253,14 @@ def update_status(check, status_code, when):
 		check["fail"]["to-code"] = status_code
 
 
-def url_check_all(repos_dir, checks, repos_files, ctx=System_Context()):
+def url_check_all(gits_dir,
+		checks,
+		repos_files,
+		ignore_patterns=[],
+		ctx=System_Context()):
 
 	for repo_name, files in repos_files.items():
-		set_used(checks, repos_dir, repo_name, files)
+		set_used(checks, gits_dir, repo_name, files, ignore_patterns)
 
 	checks = remove_unused(checks)
 
@@ -295,13 +293,19 @@ def main(sys_argv=sys.argv, ctx=System_Context()):
 		ctx.log(f"version {url_check_version}")
 		return
 
-	repos_dir = args['--gits-dir']
-	repos_cfg = args['--repos']
-	checks_path = args['--checks']
+	gits_dir = args['--gits-dir']
+	cfg_path = args['--config']
+	checks_path = args['--results']
 
-	repos_files = read_repos_files(repos_dir, read_json(repos_cfg), ctx)
+	config_obj = read_json(cfg_path)
+	repos_info = config_obj["repositories"]
+	add_ignore_patterns = config_obj.get("ignore_patterns", [])
+
+	repos_files = read_repos_files(gits_dir, repos_info, ctx)
+
 	orig_checks = read_json(checks_path)
-	checks = url_check_all(repos_dir, orig_checks, repos_files, ctx)
+	checks = url_check_all(gits_dir, orig_checks, repos_files,
+			add_ignore_patterns, ctx)
 
 	write_json(checks_path, checks)
 	write_json(check_fails_json, extract_fails(checks))
