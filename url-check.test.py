@@ -68,8 +68,8 @@ class TestSum(unittest.TestCase):
 	def test_urls_from(self):
 		paren_url = 'https://example.org/foo_(bar).svg'
 		markdown_style = "[b-(baz)](http://example.org/b-(baz))"
-		# gits_dir = '/tmp/url-check-tests/gits'
-		gits_dir = '..'
+		gits_dir = '/tmp/url-check-tests/gits'
+		# gits_dir = '..'
 		name = "url-check"
 		workdir = os.path.join(gits_dir, name)
 		file = "url-check.test.py"
