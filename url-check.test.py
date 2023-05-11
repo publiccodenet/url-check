@@ -66,14 +66,20 @@ class TestSum(unittest.TestCase):
 		self.assertGreater(num_files, 5, f"too few files: {num_files}")
 
 	def test_urls_from(self):
-		gits_dir = '/tmp/url-check-tests/gits'
+		paren_url = 'https://example.org/foo_(bar).svg'
+		markdown_style = "[b-(baz)](http://example.org/b-(baz))"
+		# gits_dir = '/tmp/url-check-tests/gits'
+		gits_dir = '..'
 		name = "url-check"
 		workdir = os.path.join(gits_dir, name)
 		file = "url-check.test.py"
 		our_ignore_patters = ['^http[s]\?://bogus.gov']
-		found = uc.urls_from(workdir, file, our_ignore_patters)
+		ctx = Test_Context()
+		found = uc.urls_from(workdir, file, our_ignore_patters, ctx)
 		self.assertIn("https://example.org/", found)
 		self.assertNotIn("http://bogus.gov", found)
+		self.assertIn(paren_url, found)
+		self.assertIn('http://example.org/' + 'b-(baz)', found)
 
 	def test_clear_previous_used(self):
 		name1 = "blog.example.net"

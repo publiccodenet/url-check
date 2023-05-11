@@ -13,6 +13,7 @@
         "^https://example.org/three.html": "used in test",
         "^https://www.bogus.gov/bad": "used in test",
         "^https://www.bogus.gov/bad2": "used in test",
+        "^https://www.example.org/bad3": "used in test",
         "^https://publiccodenet.github.io/url-check/status": "in TODO",
         "^http[s]\\?://twitter\\.com": "302; does not serve scripts",
         "^http[s]\\?://github\\.com/.*/edit/": "may point to yet-to-exist page",

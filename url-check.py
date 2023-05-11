@@ -109,10 +109,16 @@ def files_from_repo(repos_basedir, repo_name, repo_url, branch, ctx=None):
 
 def urls_from(workdir, file, user_ignore_patterns=[], ctx=None):
 	found = []
+	# pull URLs out of the file, including option leading paren
 	cmd_str = f"grep --extended-regexp --only-matching --text \
-		'(http|https)://[a-zA-Z0-9\./\?=_%:\-]*' \
-		'{file}' \
-		| sort --unique"
+		'[\\(]?(http|https)://[-a-zA-Z0-9\./\\?=_%:\\(\\)]*' \
+		'{file}'"
+	# remove surrounding parens if they exist
+	cmd_str += " | sed -e 's/^(http\\(.*\\))[\\.,]\\?$/http\\1/g'"
+	# de-duplicate
+	cmd_str += " | sort --unique"
+
+	# print("\n", cmd_str, "\n")
 
 	ignore_patterns = [
 			'^http[s]\?://localhost',
