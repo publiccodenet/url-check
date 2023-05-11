@@ -80,6 +80,7 @@ class TestSum(unittest.TestCase):
 		self.assertNotIn("http://bogus.gov", found)
 		self.assertIn(paren_url, found)
 		self.assertIn('http://example.org/' + 'b-(baz)', found)
+		self.assertNotIn('http://example.org/' + 'b-(baz))', found)
 
 	def test_clear_previous_used(self):
 		name1 = "blog.example.net"
