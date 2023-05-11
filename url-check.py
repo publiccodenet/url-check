@@ -259,6 +259,9 @@ def url_check_all(gits_dir,
 		ignore_patterns=[],
 		ctx=System_Context()):
 
+	for url in checks.keys():
+		checks[url]["used"] = {}
+
 	for repo_name, files in repos_files.items():
 		ctx.log(repo_name, "contains", len(files), "files")
 		ctx.debug(files)

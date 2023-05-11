@@ -264,6 +264,15 @@ class TestSum(unittest.TestCase):
 				"used": {
 				"test-data": ["foo.md"]
 				}
+				},
+				"https://www.example.org/bad3": {
+				"checks": {
+				"status": 200,
+				"200": "2023-03-08 15:25:05.678901",
+				},
+				"used": {
+				"old-repo": ["README"]
+				}
 				}
 		}
 
