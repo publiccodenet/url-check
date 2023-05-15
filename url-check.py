@@ -64,7 +64,7 @@ def read_json(json_file):
 # returns the text which would have been output to the screen
 def shell_slurp(cmd_str, working_dir=os.getcwd(), ctx=None, fail_func=None):
 	if ctx == None:
-		ctx = System_Context()
+		ctx = default_context()
 	ctx.debug(f"working_dir={working_dir}")
 	ctx.debug(cmd_str)
 	result = subprocess.run(
@@ -113,6 +113,7 @@ def urls_from(workdir, file, user_ignore_patterns=[], ctx=None):
 	cmd_str = f"grep --extended-regexp --only-matching --text \
 		'[\\(]?(http|https)://[-a-zA-Z0-9\./\\?=_%:\\(\\)]*' \
 		'{file}'"
+
 	# remove surrounding parens if they exist
 	cmd_str += " | sed -e 's/^(http\\(.*\\))[\\.,]\\?$/http\\1/g'"
 	# de-duplicate
@@ -226,7 +227,17 @@ class System_Context:
 			print(*args, **kwargs)
 
 
-def read_repos_files(gits_dir, repos, ctx=System_Context()):
+global_context = None
+
+
+def default_context():
+	global global_context
+	if (global_context == None):
+		global_context = System_Context()
+	return global_context
+
+
+def read_repos_files(gits_dir, repos, ctx):
 	repo_files = {}
 
 	for repo_name, repo_data in repos.items():
@@ -259,11 +270,7 @@ def update_status(check, status_code, when):
 		check["fail"]["to-code"] = status_code
 
 
-def url_check_all(gits_dir,
-		checks,
-		repos_files,
-		ignore_patterns=[],
-		ctx=System_Context()):
+def url_check_all(gits_dir, checks, repos_files, ignore_patterns=[], ctx=None):
 
 	for url in checks.keys():
 		checks[url]["used"] = {}
@@ -298,7 +305,7 @@ def extract_fails(checks):
 	return fails
 
 
-def main(sys_argv=sys.argv, ctx=System_Context()):
+def main(sys_argv=sys.argv, ctx=default_context()):
 	args = docopt.docopt(docopt_str, argv=sys_argv[1:])
 	ctx.verbose = args['--verbose']
 	ctx.debug(args)
