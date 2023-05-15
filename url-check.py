@@ -297,12 +297,22 @@ def url_check_all(gits_dir, checks, repos_files, ignore_patterns=[], ctx=None):
 	return checks
 
 
-def extract_fails(checks):
-	fails = {}
+def condense_results(checks, repos):
+	results = {
+			"urls": {},
+			"repos": {},
+	}
+
+	for repo in repos:
+		results["repos"][repo] = "passing"
+
 	for url, check in checks.items():
 		if check["checks"]["status"] != 200:
-			fails[url] = check
-	return fails
+			results["urls"][url] = check
+			for repo in check["used"].keys():
+				results["repos"][repo] = "failing"
+
+	return results
 
 
 def main(sys_argv=sys.argv, ctx=default_context()):
@@ -329,7 +339,7 @@ def main(sys_argv=sys.argv, ctx=default_context()):
 			add_ignore_patterns, ctx)
 
 	write_json(checks_path, checks)
-	write_json(check_fails_json, extract_fails(checks))
+	write_json(check_fails_json, condense_results(checks, repos_info.keys()))
 
 
 if __name__ == "__main__":  # pragma: no cover

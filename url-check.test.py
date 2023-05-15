@@ -336,10 +336,20 @@ class TestSum(unittest.TestCase):
 		self.maxDiff = None
 		self.assertEqual(checks, expected)
 
+		# remove the passes from the checks to create condensed results
 		expected.pop("https://example.net/")
 		expected.pop("https://example.org/")
-		fails = uc.extract_fails(checks)
-		self.assertEqual(fails, expected)
+		expected_condensed = {
+				"repos": {
+				"good-data": "passing",
+				"test-data": "failing",
+				},
+				"urls": expected,
+		}
+
+		repos = ["good-data", "test-data"]
+		condensed = uc.condense_results(checks, repos)
+		self.assertEqual(condensed, expected_condensed)
 
 	def test_main_version(self):
 		argv = ['url-check', '--version']
