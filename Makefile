@@ -52,7 +52,7 @@ check-coverage: .coverage
 
 .PHONY: test
 test: run
-	if [ $$(wc -l url-check-fails.json | cut -f1 -d' ') -gt 1 ]; then \
+	if [ $$(grep -c '"failing"' url-check-fails.json) -ne 0 ]; then \
 		false; \
 	fi
 	@echo "SUCCESS $@"

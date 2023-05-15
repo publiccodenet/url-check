@@ -6,6 +6,7 @@ import datetime
 import docopt
 import json
 import os
+import pathlib
 import re
 import requests
 import subprocess
@@ -339,7 +340,13 @@ def main(sys_argv=sys.argv, ctx=default_context()):
 			add_ignore_patterns, ctx)
 
 	write_json(checks_path, checks)
-	write_json(check_fails_json, condense_results(checks, repos_info.keys()))
+	condensed = condense_results(checks, repos_info.keys())
+	write_json(check_fails_json, condensed)
+	for name, result in condensed["repos"].items():
+		shell_slurp("mkdir -pv badges", ".", ctx)
+		p = pathlib.Path("badges/" + name + ".svg")
+		p.unlink()
+		p.symlink_to("../assets/" + result + ".svg")
 
 
 if __name__ == "__main__":  # pragma: no cover
