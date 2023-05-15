@@ -317,6 +317,11 @@ def condense_results(checks, repos):
 
 
 def main(sys_argv=sys.argv, ctx=default_context()):
+	exe = pathlib.Path(sys_argv[0])
+	exedir = os.path.dirname(exe)
+	#TODO: consider param for assets dir
+	assetsdir = os.path.abspath(os.path.join(exedir, "assets"))
+
 	args = docopt.docopt(docopt_str, argv=sys_argv[1:])
 	ctx.verbose = args['--verbose']
 	ctx.debug(args)
@@ -345,8 +350,9 @@ def main(sys_argv=sys.argv, ctx=default_context()):
 	for name, result in condensed["repos"].items():
 		shell_slurp("mkdir -pv badges", ".", ctx)
 		p = pathlib.Path("badges/" + name + ".svg")
-		p.unlink()
-		p.symlink_to("../assets/" + result + ".svg")
+		p.unlink(missing_ok=True)
+		badge = os.path.join(assetsdir, result + ".svg")
+		p.symlink_to(badge)
 
 
 if __name__ == "__main__":  # pragma: no cover
