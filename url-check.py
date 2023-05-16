@@ -324,6 +324,18 @@ def condense_results(checks, repos):
 
 	return results
 
+def repo_results(repos_info, checks, checks_path, check_fails_json):
+	for repo in repos_info.keys():
+		repo_checks = {}
+		for url, check in checks.items():
+			if repo in check["used"].keys():
+				repo_checks[url] = check
+		repo_checks_path = repo + '-' + os.path.basename(checks_path)
+		write_json(repo_checks_path, repo_checks)
+		repo_condensed = condense_results(repo_checks, [repo])
+		repo_condensed_path = repo + '-' + os.path.basename(check_fails_json)
+		write_json(repo_condensed_path, repo_condensed)
+
 
 def main(sys_argv=sys.argv, ctx=default_context()):
 	exe = pathlib.Path(sys_argv[0])
@@ -357,12 +369,15 @@ def main(sys_argv=sys.argv, ctx=default_context()):
 	write_json(checks_path, checks)
 	condensed = condense_results(checks, repos_info.keys())
 	write_json(check_fails_json, condensed)
+
 	for name, result in condensed["repos"].items():
 		shell_slurp("mkdir -pv badges", ".", ctx)
 		p = pathlib.Path("badges/" + name + ".svg")
 		p.unlink(missing_ok=True)
 		badge = os.path.join(assetsdir, result + ".svg")
 		p.symlink_to(badge)
+
+	repo_results(repos_info, checks, checks_path, check_fails_json)
 
 
 if __name__ == "__main__":  # pragma: no cover

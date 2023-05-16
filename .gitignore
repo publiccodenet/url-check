@@ -8,6 +8,9 @@ test-obj.json
 test-data/
 url-check-results.json
 url-check-fails.json
+url-check-test-repos-checks.json
+url-check-url-check-fails.json
+url-check-url-check-results.json
 
 __pycache__/
 .coverage
