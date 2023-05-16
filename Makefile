@@ -9,6 +9,7 @@
 
 BROWSER ?= firefox
 SHELL=/bin/bash
+COVERAGE ?= python3-coverage
 
 .PHONY: default
 default: check-all
@@ -24,14 +25,14 @@ check: url-check.test.py
 	@echo "SUCCESS $@"
 
 .coverage: url-check.test.py url-check.py
-	coverage run url-check.test.py
+	 $(COVERAGE) run url-check.test.py
 
 .PHONY: coverage
 coverage: .coverage
-	coverage report url-check.py
+	$(COVERAGE) report url-check.py
 
 COVERAGE_PERCENT_CMD=\
-`coverage report url-check.py \
+`$(COVERAGE) report url-check.py \
  | grep url-check.py \
  | awk '{print $$4}' \
  | sed 's/%//'`
@@ -41,7 +42,7 @@ MIN_COVERAGE_PCT_THRESHOLD=100
 .PHONY: check-coverage
 check-coverage: .coverage
 	{ \
-		coverage report url-check.py; \
+		$(COVERAGE) report url-check.py; \
 		COVERAGE_PERCENT=$(COVERAGE_PERCENT_CMD); \
 		if [ $$COVERAGE_PERCENT -lt $(MIN_COVERAGE_PCT_THRESHOLD) ]; \
 		then \
@@ -62,7 +63,7 @@ check-all: check check-coverage test
 	@echo "SUCCESS $@"
 
 htmlcov/url-check_py.html: .coverage
-	coverage html url-check.py
+	$(COVERAGE) html url-check.py
 
 .PHONY: view-coverage
 view-coverage: htmlcov/url-check_py.html
