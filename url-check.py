@@ -18,6 +18,7 @@ url_check_version = "0.0.0"
 default_results_json = "url-check-results.json"
 default_config_json = "url-check-config.json"
 default_gits_dir = "/tmp/url-check/gits"
+default_timeout = "10"
 
 check_fails_json = "url-check-fails.json"
 
@@ -35,6 +36,9 @@ Options:
         -r PATH, --results=PATH path to the JSON check results file, if the
                                 file already exists, it will be modified
                                 [default: {default_results_json}]
+        -t SECONDS, --timeout=SECONDS
+                                timeout set on the request
+                                [default: {default_timeout}]
 
         -h, --help              Prints this message
         -V, --version           Prints the version ({url_check_version})
@@ -198,9 +202,9 @@ def sort_by_key(stuff):
 	return {key: val for key, val in sorted_elems}
 
 
-def status_code_for_url(url):
+def status_code_for_url(url, timeout):
 	try:
-		response = requests.head(url, allow_redirects=True, timeout=10)
+		response = requests.head(url, allow_redirects=True, timeout=timeout)
 		return response.status_code
 	except Exception:
 		return 0
@@ -271,7 +275,12 @@ def update_status(check, status_code, when):
 		check["fail"]["to-code"] = status_code
 
 
-def url_check_all(gits_dir, checks, repos_files, ignore_patterns=[], ctx=None):
+def url_check_all(gits_dir,
+		checks,
+		repos_files,
+		timeout,
+		ignore_patterns=[],
+		ctx=None):
 
 	for url in checks.keys():
 		checks[url]["used"] = {}
@@ -291,7 +300,7 @@ def url_check_all(gits_dir, checks, repos_files, ignore_patterns=[], ctx=None):
 		ctx.log("")
 		when = ctx.now()
 		ctx.log(when, url)
-		status_code = status_code_for_url(url)
+		status_code = status_code_for_url(url, timeout)
 		ctx.log(status_code, url)
 		update_status(checks[url]["checks"], status_code, when)
 
@@ -332,6 +341,7 @@ def main(sys_argv=sys.argv, ctx=default_context()):
 	gits_dir = args['--gits-dir']
 	cfg_path = args['--config']
 	checks_path = args['--results']
+	timeout = int(args['--timeout'])
 
 	config_obj = read_json(cfg_path)
 	repos_info = config_obj["repositories"]
@@ -341,7 +351,7 @@ def main(sys_argv=sys.argv, ctx=default_context()):
 	repos_files = read_repos_files(gits_dir, repos_info, ctx)
 
 	orig_checks = read_json(checks_path)
-	checks = url_check_all(gits_dir, orig_checks, repos_files,
+	checks = url_check_all(gits_dir, orig_checks, repos_files, timeout,
 			add_ignore_patterns, ctx)
 
 	write_json(checks_path, checks)

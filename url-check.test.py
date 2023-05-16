@@ -140,11 +140,11 @@ class TestSum(unittest.TestCase):
 		self.assertEqual("abc", keys)
 
 	def test_status_code_for_url(self):
-		status_code = uc.status_code_for_url("http://example.org")
+		status_code = uc.status_code_for_url("http://example.org", 1)
 		self.assertEqual(status_code, 200)
 
 	def test_status_code_for_bad_url(self):
-		status_code = uc.status_code_for_url("http://bogus.gov")
+		status_code = uc.status_code_for_url("http://bogus.gov", 1)
 		self.assertEqual(status_code, 0)
 
 	def test_read_and_write_json(self):
@@ -331,7 +331,8 @@ class TestSum(unittest.TestCase):
 				}
 		}
 		add_ignore = []
-		checks = uc.url_check_all('.', checks, repos_files, add_ignore,
+		timeout = 2
+		checks = uc.url_check_all('.', checks, repos_files, timeout, add_ignore,
 				Test_Context())
 		self.maxDiff = None
 		self.assertEqual(checks, expected)
