@@ -39,9 +39,7 @@ Please see our [code of conduct](CODE_OF_CONDUCT.md).
 
 ### Near term
 
-* make a simple web page to display the results
-  * with badges
-  * built via GitHub workflow
+* add a second branch with a failing link for the demo
 * improve tests
   * corner cases of URLs syntax are under-tested
   * improve confidence in report output
