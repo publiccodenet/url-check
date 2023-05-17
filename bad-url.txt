@@ -1,0 +1,7 @@
+This file contains a good URL for use with
+
+https://publiccodenet.github.io/url-check/
+
+And also a bad URL:
+
+https://publiccodenet.github.io/url-check/sir-not-appearing.html
