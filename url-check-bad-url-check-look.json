@@ -16,7 +16,6 @@
         }
     },
     "repos": {
-        "url-check": "passing",
         "url-check-bad": "failing"
     }
 }

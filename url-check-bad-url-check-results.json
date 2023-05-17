@@ -1,0 +1,27 @@
+{
+    "https://publiccodenet.github.io/url-check/": {
+        "checks": {
+            "status": 200,
+            "200": "2023-05-17 14:58:00.168066"
+        },
+        "used": {
+            "url-check-bad": [
+                "bad-url.txt"
+            ]
+        }
+    },
+    "https://publiccodenet.github.io/url-check/sir-not-appearing.html": {
+        "checks": {
+            "status": 404,
+            "fail": {
+                "from": "2023-05-17 14:58:00.319639",
+                "from-code": 404
+            }
+        },
+        "used": {
+            "url-check-bad": [
+                "bad-url.txt"
+            ]
+        }
+    }
+}
