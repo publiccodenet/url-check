@@ -39,7 +39,6 @@ Please see our [code of conduct](CODE_OF_CONDUCT.md).
 
 ### Near term
 
-* add a second branch with a failing link for the demo
 * improve tests
   * corner cases of URLs syntax are under-tested
   * improve confidence in report output

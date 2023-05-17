@@ -26,25 +26,36 @@ make-badge: ./node_modules/.bin/badge
 LICENSE_ID ?= CC0-1.0
 COPYRIGHT_TEXT ?= 2023 The Foundation for Public Code <info@publiccode.net>
 
-badges/url-check.svg: make-badge
+badges/url-check.svg: make-badge url-check-url-check-fails.json
 	LICENSE_ID='$(LICENSE_ID)' COPYRIGHT_TEXT='$(COPYRIGHT_TEXT)' \
 		./make-badge url-check main
 
+badges/url-check-bad.svg: make-badge url-check-bad-url-check-fails.json
+	LICENSE_ID='$(LICENSE_ID)' COPYRIGHT_TEXT='$(COPYRIGHT_TEXT)' \
+		./make-badge url-check-bad demo-bad-link
+
+url-check-url-check-look.json \
 url-check-url-check-fails.json \
 url-check-url-check-results.json \
+url-check-bad-url-check-look.json \
+url-check-bad-url-check-fails.json \
+url-check-bad-url-check-results.json \
 url-check-fails.json \
 url-check-results.json \
-		&: url-check.py url-check-run-config.json
-	./url-check.py --config=url-check-run-config.json
+		&: url-check.py url-check-demo-config.json
+	./url-check.py --config=url-check-demo-config.json
 
-site: url-check-url-check-look.json \
-		badges/url-check.svg \
+site: badges/url-check.svg \
+		badges/url-check-bad.svg \
+		url-check-url-check-look.json \
 		url-check-url-check-fails.json \
 		url-check-url-check-results.json \
+		url-check-bad-url-check-look.json \
+		url-check-bad-url-check-fails.json \
+		url-check-bad-url-check-results.json \
 		url-check-fails.json \
 		url-check-results.json
 	cp -v $^ _site/
-
 
 url-check.test.py: url-check.py
 
@@ -103,7 +114,7 @@ tidy: url-check.py url-check.test.py
 
 .PHONY: clean
 clean:
-	rm -vf .coverage
+	rm -vf .coverage _site/*.json _site/*.svg
 
 .PHONY: dist-clean
 dist-clean:

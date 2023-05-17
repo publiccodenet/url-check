@@ -6,12 +6,10 @@ blog.publiccode.net/
 standard-for-public-code/
 test-obj.json
 test-data/
-url-check-results.json
-url-check-fails.json
-url-check-test-repos-checks.json
-url-check-url-check-fails.json
-url-check-url-check-results.json
-url-check-url-check-look.json
+*-results.json
+*-fails.json
+*-look.json
+*-checks.json
 .coverage
 *.svg
 *.swp
