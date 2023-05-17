@@ -2,9 +2,12 @@
     "https://publiccodenet.github.io/url-check/": {
         "checks": {
             "status": 200,
-            "200": "2023-05-17 14:58:00.168066"
+            "200": "2023-05-17 15:12:44.241978"
         },
         "used": {
+            "url-check": [
+                "README.md"
+            ],
             "url-check-bad": [
                 "bad-url.txt"
             ]
@@ -14,7 +17,7 @@
         "checks": {
             "status": 404,
             "fail": {
-                "from": "2023-05-17 14:58:00.319639",
+                "from": "2023-05-17 15:12:44.330560",
                 "from-code": 404
             }
         },
