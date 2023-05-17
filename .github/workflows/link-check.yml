@@ -52,7 +52,7 @@ jobs:
           python3-docopt
           wget
       - name: fetch-previous-results
-        run: echo wget https://publiccodenet.github.io/url-check/url-check-results.json
+        run: wget https://publiccodenet.github.io/url-check/url-check-results.json
       - name: run-the-batch
         run: make run
       - name: update-site
