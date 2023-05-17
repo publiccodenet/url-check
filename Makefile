@@ -18,6 +18,11 @@ default: check-all
 run: url-check.py url-check-run-config.json
 	./url-check.py --config=url-check-run-config.json
 
+./node_modules/.bin/badge:
+	npm install badge-maker
+
+make_badge: ./node_modules/.bin/badge
+
 url-check.test.py: url-check.py
 
 check: url-check.test.py

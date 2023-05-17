@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: 2023 The Foundation for Public Code <info@publiccode.net>
+
+# $ help set | grep "\-e"
+#      -e  Exit immediately if a command exits with a non-zero status.
+set -e
+
+REPO_NAME=$1
+BRANCH=$2
+if [ "_${REPO_NAME}_" == "__" ] || [ "_${BRANCH}_" == "__" ]; then
+echo "usage: $0 repo_name branch_name"
+exit 1
+fi
+
+BADGE_LABEL="link check"
+
+if grep '"passing"' ${REPO_NAME}-url-check-fails.json; then
+	BADGE_COLOR=":green"
+	BADGE_TEXT_STATUS="passing"
+else
+	BADGE_COLOR=":red"
+	BADGE_TEXT_STATUS="failing"
+fi
+BADGE_TEXT="${BRANCH} ${BADGE_TEXT_STATUS}"
+
+# ensure directory exists
+mkdir -pv badges
+# and that no file, or symlink, is already there
+rm -f badges/${REPO_NAME}.svg
+
+# create the header
+cat > badges/${REPO_NAME}.head.svg <<EOF
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+EOF
+if [ "_${LICENSE_ID}_" != "__" ]; then
+cat >> badges/${REPO_NAME}.head.svg <<EOF
+<!-- SPDX-License-Identifier: ${LICENSE_ID} -->
+EOF
+fi
+
+if [ "_${COPYRIGHT_TEXT}_" != "__" ]; then
+cat >> badges/${REPO_NAME}.head.svg <<EOF
+<!-- SPDX-FileCopyrightText: ${COPYRIGHT_TEXT} -->
+EOF
+fi
+
+# create the body
+./node_modules/.bin/badge \
+	"${BADGE_LABEL}" \
+	"${BADGE_TEXT}" \
+	"${BADGE_COLOR}" \
+	flat \
+	> badges/${REPO_NAME}.body.svg
+
+# combine the unformatted contents
+cat	badges/${REPO_NAME}.head.svg \
+	badges/${REPO_NAME}.body.svg \
+	> badges/${REPO_NAME}.tmp.svg
+
+# format for final output
+xmllint --format badges/${REPO_NAME}.tmp.svg \
+	--output badges/${REPO_NAME}.svg
+
+rm badges/${REPO_NAME}.{tmp,head,body}.svg
+ls -l badges/${REPO_NAME}.svg
