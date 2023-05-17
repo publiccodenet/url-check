@@ -10,6 +10,8 @@ Additionally reports are available with full details of each URL checked, as wel
 
 The configuration file allows for the exclusion of URLs via regular expression patterns, which has proven essential for reducing noise from sites that have URLs that regularly fail.
 
+Here is a [demo](https://publiccodenet.github.io/url-check/).
+
 ## Status: Alpha
 
 The code is [in use](https://publiccodenet.github.io/publiccodenet-url-check/) to regularly check some repositories.
@@ -25,6 +27,8 @@ The [`url-check-config.json`](url-check-config.json) shows an example of how to 
 Execute the script via `./url-check.py --config=/path/to/your-config.json`.
 
 See `url-check.py --help` for the list of command-line options.
+
+See the [GitHub workflow](.github/workflows/link-check.yml) for an example of runing the code on a schedule.
 
 ## Maintenance
 
