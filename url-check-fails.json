@@ -1,0 +1,21 @@
+{
+    "urls": {
+        "https://publiccodenet.github.io/url-check/url-check-results.json": {
+            "checks": {
+                "status": 404,
+                "fail": {
+                    "from": "2023-05-17 14:13:22.486815",
+                    "from-code": 404
+                }
+            },
+            "used": {
+                "url-check": [
+                    ".github/workflows/link-check.yml"
+                ]
+            }
+        }
+    },
+    "repos": {
+        "url-check": "failing"
+    }
+}
