@@ -53,8 +53,6 @@ jobs:
           wget
       - name: fetch-previous-results
         run: wget https://publiccodenet.github.io/url-check/url-check-results.json
-      - name: run-the-batch
-        run: make run
       - name: update-site
         run: make site
       - name: report-built-files
