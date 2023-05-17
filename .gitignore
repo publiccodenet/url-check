@@ -11,6 +11,7 @@ url-check-fails.json
 url-check-test-repos-checks.json
 url-check-url-check-fails.json
 url-check-url-check-results.json
+url-check-url-check-look.json
 
 __pycache__/
 .coverage
