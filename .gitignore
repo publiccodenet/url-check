@@ -12,12 +12,12 @@ url-check-test-repos-checks.json
 url-check-url-check-fails.json
 url-check-url-check-results.json
 url-check-url-check-look.json
-
-__pycache__/
 .coverage
+*.svg
 *.swp
 
-# for gh-pages branch
-Gemfile.lock
-_site/
-vendor/
+__pycache__/
+
+package.json
+package-lock.json
+node_modules/

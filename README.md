@@ -59,4 +59,4 @@ Please see our [code of conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-[Licensed](LICENSE) under the Creative Commons Zero v1.0 Universal license.
+[Licensed](COPYING) under the Creative Commons Zero v1.0 Universal license.
