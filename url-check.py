@@ -203,8 +203,19 @@ def sort_by_key(stuff):
 
 
 def status_code_for_url(url, timeout):
+	user_agent = 'url-check github.com/publiccodenet/url-check'
+	user_agent += f' v{url_check_version}'
+	headers = {
+			'User-Agent': user_agent,
+	}
+	# do we want to set a 'From' header?
+	# we could check 'git config --get user.name'
+	# and/or 'git config --get user.email' for this.
+	# 'From': 'info@examle.org',
+
 	try:
-		response = requests.head(url, allow_redirects=True, timeout=timeout)
+		response = requests.head(
+				url, allow_redirects=True, timeout=timeout, headers=headers)
 		return response.status_code
 	except Exception:
 		return 0
