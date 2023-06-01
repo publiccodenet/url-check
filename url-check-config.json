@@ -9,5 +9,9 @@
         "^http[s]\\?://twitter\\.com": "302; does not serve scripts",
         "^http[s]\\?://github\\.com/.*/edit/": "may point to yet-to-exist page",
         "^http[s]\\?://docs\\.github\\.com/": "seems blocked as DoS protection"
+    },
+    "transforms" : {
+	"sed 's@^\\(https://example.org/.*\\)[\\.,)]$@\\1@'":
+		"remove trailing punctuation from example.org links"
     }
 }

@@ -113,7 +113,6 @@ def files_from_repo(repos_basedir, repo_name, repo_url, branch, ctx=None):
 
 
 def urls_from(workdir, file, user_ignore_patterns=[], ctx=None):
-	found = []
 	# pull URLs out of the file, including option leading paren
 	cmd_str = f"grep --extended-regexp --only-matching --text \
 		'[\\(]?(http|https)://[-a-zA-Z0-9\./\\?=_%:\\(\\)]*' \
@@ -136,12 +135,14 @@ def urls_from(workdir, file, user_ignore_patterns=[], ctx=None):
 	for pattern in ignore_patterns:
 		cmd_str += f" | grep --invert-match '{pattern}'"
 
-	urls = shell_slurp(cmd_str, workdir, ctx).splitlines()
-	for url in urls:
+	lines = shell_slurp(cmd_str, workdir, ctx).splitlines()
+	urls = []
+	for line in lines:
 		# ignore 'binary file matches' messages, only grab URLs
-		if url.startswith("http"):
-			found += [url]
-	return found
+		if line.startswith("http"):
+			urls += [line]
+
+	return urls
 
 
 def clear_previous_used(checks, name):
@@ -151,9 +152,28 @@ def clear_previous_used(checks, name):
 			checks[url]["used"][name] = []
 
 
-def set_used_for_file(checks, gits_dir, name, file, ignore_patterns, ctx):
+def transform_urls(transforms, urls, ctx):
+	urls_str = "\n".join(urls)
+
+	cmd = f"echo '{urls_str}'"
+	for transform in transforms:
+		cmd = cmd + f" | {transform}"
+
+	urls_str = shell_slurp(cmd, ".", ctx)
+
+	transformed_urls = []
+	for line in urls_str.splitlines():
+		if line.startswith("http"):
+			transformed_urls += [line]
+
+	return transformed_urls
+
+
+def set_used_for_file(
+		checks, gits_dir, name, file, ignore_patterns, transforms, ctx):
 	repo_dir = os.path.join(gits_dir, name)
 	urls = urls_from(repo_dir, file, ignore_patterns, ctx)
+	urls = transform_urls(transforms, urls, ctx)
 	for url in urls:
 		if url not in checks.keys():
 			checks[url] = {}
@@ -165,10 +185,11 @@ def set_used_for_file(checks, gits_dir, name, file, ignore_patterns, ctx):
 			checks[url]["used"][name] += [file]
 
 
-def set_used(checks, gits_dir, name, files, ignore_patterns, ctx):
+def set_used(checks, gits_dir, name, files, ignore_patterns, transforms, ctx):
 	clear_previous_used(checks, name)
 	for file in files:
-		set_used_for_file(checks, gits_dir, name, file, ignore_patterns, ctx)
+		set_used_for_file(checks, gits_dir, name, file, ignore_patterns, transforms,
+				ctx)
 
 
 def remove_unused(checks):
@@ -291,6 +312,7 @@ def url_check_all(gits_dir,
 		repos_files,
 		timeout,
 		ignore_patterns=[],
+		transforms=[],
 		ctx=None):
 
 	for url in checks.keys():
@@ -299,7 +321,8 @@ def url_check_all(gits_dir,
 	for repo_name, files in repos_files.items():
 		ctx.log(repo_name, "contains", len(files), "files")
 		ctx.debug(files)
-		set_used(checks, gits_dir, repo_name, files, ignore_patterns, ctx)
+		set_used(checks, gits_dir, repo_name, files, ignore_patterns, transforms,
+				ctx)
 
 	ctx.debug("checks length:", len(checks), "before unused removed")
 	checks = remove_unused(checks)
@@ -387,12 +410,14 @@ def main(sys_argv=sys.argv, ctx=default_context()):
 	repos_info = config_obj["repositories"]
 	ignore_patterns_map = config_obj.get("ignore_patterns", {})
 	add_ignore_patterns = ignore_patterns_map.keys()
+	transforms_map = config_obj.get("transforms", {})
+	transforms = transforms_map.keys()
 
 	repos_files = read_repos_files(gits_dir, repos_info, ctx)
 
 	orig_checks = read_json(checks_path)
 	checks = url_check_all(gits_dir, orig_checks, repos_files, timeout,
-			add_ignore_patterns, ctx)
+			add_ignore_patterns, transforms, ctx)
 
 	write_json(checks_path, checks)
 	condensed = condense_results(checks, repos_info.keys())

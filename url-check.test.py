@@ -40,7 +40,7 @@ class Test_Context:
 			return self.log(args, kwargs)
 
 
-class TestSum(unittest.TestCase):
+class Test_url_check(unittest.TestCase):
 
 	def test_system_context(self):
 		ctx = uc.System_Context()
@@ -118,7 +118,8 @@ class TestSum(unittest.TestCase):
 		config = uc.read_json('url-check-config.json')
 
 		ignore = config.get("ignore_patterns").keys()
-		uc.set_used_for_file(checks, gits_dir, name, file, ignore, ctx)
+		transforms = []
+		uc.set_used_for_file(checks, gits_dir, name, file, ignore, transforms, ctx)
 
 		self.assertNotIn("https://twitter.com", checks)
 
@@ -185,6 +186,32 @@ class TestSum(unittest.TestCase):
 		ctx = Test_Context()
 		repo_files = uc.read_repos_files(gits_dir, repos, ctx)
 		self.assertIn("url-check.test.py", repo_files[repo_name])
+
+	def test_transform_urls(self):
+		ctx = Test_Context()
+		ctx.capture = True
+		ctx.verbose = True
+		transforms = []
+		urls = [
+				'https://example.org/one.html',
+				'https://example.org/obsolete.html',
+				'https://example.org/three.html',
+		]
+		transformed = uc.transform_urls(transforms, urls, ctx)
+		self.assertEqual(transformed, urls)
+
+		transforms = [
+				f"sed 's@obsolete\\.html@foo.html)@g'",
+				f"sed 's@foo@two@g'",
+				f"sed 's@\\(example.org/.*\\)[\\.,)]$@\\1@g'",
+		]
+		expected_urls = [
+				'https://example.org/one.html',
+				'https://example.org/two.html',
+				'https://example.org/three.html',
+		]
+		transformed = uc.transform_urls(transforms, urls, ctx)
+		self.assertEqual(transformed, expected_urls, ctx.out)
 
 	def test_remove_unused(self):
 		url3 = "https://example.org/three.html"
@@ -331,9 +358,11 @@ class TestSum(unittest.TestCase):
 				}
 		}
 		add_ignore = []
+		transforms = []
+		ctx = Test_Context()
 		timeout = 2
 		checks = uc.url_check_all('.', checks, repos_files, timeout, add_ignore,
-				Test_Context())
+				transforms, ctx)
 		self.maxDiff = None
 		self.assertEqual(checks, expected)
 
