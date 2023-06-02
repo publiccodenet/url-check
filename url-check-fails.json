@@ -1,12 +1,26 @@
 {
     "urls": {
+        "https://example.org/two.html": {
+            "checks": {
+                "status": 404,
+                "fail": {
+                    "from": "2023-06-02 03:23:39.176724",
+                    "from-code": 404
+                }
+            },
+            "used": {
+                "url-check": [
+                    "url-check.test.py"
+                ]
+            }
+        },
         "https://publiccodenet.github.io/url-check/sir-not-appearing.html": {
             "checks": {
                 "status": 404,
                 "fail": {
                     "from": "2023-05-17 15:12:44.330560",
                     "from-code": 404,
-                    "to": "2023-06-01 03:35:20.130690",
+                    "to": "2023-06-02 03:23:40.969508",
                     "to-code": 404
                 }
             },
@@ -18,7 +32,7 @@
         }
     },
     "repos": {
-        "url-check": "passing",
+        "url-check": "failing",
         "url-check-bad": "failing"
     }
 }

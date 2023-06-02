@@ -1,140 +1,21 @@
 {
-    "http://example.org": {
-        "checks": {
-            "status": 200,
-            "200": "2023-06-01 03:35:09.820236"
-        },
-        "used": {
-            "url-check": [
-                "url-check.test.py"
-            ]
+    "urls": {
+        "https://example.org/two.html": {
+            "checks": {
+                "status": 404,
+                "fail": {
+                    "from": "2023-06-02 03:23:39.176724",
+                    "from-code": 404
+                }
+            },
+            "used": {
+                "url-check": [
+                    "url-check.test.py"
+                ]
+            }
         }
     },
-    "http://example.org/": {
-        "checks": {
-            "status": 200,
-            "200": "2023-06-01 03:35:13.840841"
-        },
-        "used": {
-            "url-check": [
-                "url-check.test.py"
-            ]
-        }
-    },
-    "https://example.net/": {
-        "checks": {
-            "status": 200,
-            "200": "2023-06-01 03:35:13.869081"
-        },
-        "used": {
-            "url-check": [
-                "url-check.test.py"
-            ]
-        }
-    },
-    "https://example.org/": {
-        "checks": {
-            "status": 200,
-            "200": "2023-06-01 03:35:18.220820"
-        },
-        "used": {
-            "url-check": [
-                "url-check.test.py"
-            ]
-        }
-    },
-    "https://github.com/publiccodenet/url-check.git": {
-        "checks": {
-            "status": 200,
-            "200": "2023-06-01 03:35:18.350380"
-        },
-        "used": {
-            "url-check": [
-                "url-check-config.json",
-                "url-check-demo-config.json",
-                "url-check-run-config.json",
-                "url-check.test.py"
-            ]
-        }
-    },
-    "https://github.com/publiccodenet/url-check/tree/demo-bad-link/": {
-        "checks": {
-            "status": 200,
-            "200": "2023-06-01 03:35:18.848108"
-        },
-        "used": {
-            "url-check": [
-                "_site/index.html"
-            ]
-        }
-    },
-    "https://github.com/publiccodenet/url-check/tree/main/": {
-        "checks": {
-            "status": 200,
-            "200": "2023-06-01 03:35:19.291350"
-        },
-        "used": {
-            "url-check": [
-                "_site/index.html"
-            ]
-        }
-    },
-    "https://publiccodenet.github.io/publiccodenet-url-check/": {
-        "checks": {
-            "status": 200,
-            "200": "2023-06-01 03:35:19.734548"
-        },
-        "used": {
-            "url-check": [
-                "README.md"
-            ]
-        }
-    },
-    "https://publiccodenet.github.io/url-check/": {
-        "checks": {
-            "status": 200,
-            "200": "2023-06-01 03:35:19.925929"
-        },
-        "used": {
-            "url-check": [
-                "README.md"
-            ],
-            "url-check-bad": [
-                "bad-url.txt"
-            ]
-        }
-    },
-    "https://publiccodenet.github.io/url-check/url-check-results.json": {
-        "checks": {
-            "status": 200,
-            "200": "2023-06-01 03:35:20.286465"
-        },
-        "used": {
-            "url-check": [
-                ".github/workflows/link-check.yml"
-            ]
-        }
-    },
-    "https://pypi.org/project/json5/": {
-        "checks": {
-            "status": 200,
-            "200": "2023-06-01 03:35:20.439708"
-        },
-        "used": {
-            "url-check": [
-                "README.md"
-            ]
-        }
-    },
-    "https://standard.publiccode.net/AUTHORS": {
-        "checks": {
-            "status": 200,
-            "200": "2023-06-01 03:35:20.572771"
-        },
-        "used": {
-            "url-check": [
-                "CODE_OF_CONDUCT.md"
-            ]
-        }
+    "repos": {
+        "url-check": "failing"
     }
 }
