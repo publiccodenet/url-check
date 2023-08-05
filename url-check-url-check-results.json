@@ -2,7 +2,7 @@
     "http://example.org": {
         "checks": {
             "status": 200,
-            "200": "2023-08-04 03:48:21.473624"
+            "200": "2023-08-05 03:22:16.281175"
         },
         "used": {
             "url-check": [
@@ -13,7 +13,7 @@
     "http://example.org/": {
         "checks": {
             "status": 200,
-            "200": "2023-08-04 03:48:21.507628"
+            "200": "2023-08-05 03:22:16.417050"
         },
         "used": {
             "url-check": [
@@ -24,7 +24,7 @@
     "https://example.net/": {
         "checks": {
             "status": 200,
-            "200": "2023-08-04 03:48:21.520114"
+            "200": "2023-08-05 03:22:16.430040"
         },
         "used": {
             "url-check": [
@@ -35,7 +35,7 @@
     "https://example.org/": {
         "checks": {
             "status": 200,
-            "200": "2023-08-04 03:48:21.631006"
+            "200": "2023-08-05 03:22:16.539232"
         },
         "used": {
             "url-check": [
@@ -49,7 +49,7 @@
             "fail": {
                 "from": "2023-06-02 03:23:39.176724",
                 "from-code": 404,
-                "to": "2023-08-04 03:48:21.723521",
+                "to": "2023-08-05 03:22:16.632218",
                 "to-code": 404
             }
         },
@@ -62,7 +62,7 @@
     "https://github.com/publiccodenet/url-check.git": {
         "checks": {
             "status": 200,
-            "200": "2023-08-04 03:48:22.045741"
+            "200": "2023-08-05 03:22:16.999393"
         },
         "used": {
             "url-check": [
@@ -76,7 +76,7 @@
     "https://github.com/publiccodenet/url-check/tree/demo-bad-link/": {
         "checks": {
             "status": 200,
-            "200": "2023-08-04 03:48:22.559445"
+            "200": "2023-08-05 03:22:17.722666"
         },
         "used": {
             "url-check": [
@@ -87,7 +87,7 @@
     "https://github.com/publiccodenet/url-check/tree/main/": {
         "checks": {
             "status": 200,
-            "200": "2023-08-04 03:48:22.952230"
+            "200": "2023-08-05 03:22:18.151259"
         },
         "used": {
             "url-check": [
@@ -98,7 +98,7 @@
     "https://publiccodenet.github.io/publiccodenet-url-check/": {
         "checks": {
             "status": 200,
-            "200": "2023-08-04 03:48:23.263334"
+            "200": "2023-08-05 03:22:18.535827"
         },
         "used": {
             "url-check": [
@@ -109,7 +109,7 @@
     "https://publiccodenet.github.io/url-check/": {
         "checks": {
             "status": 200,
-            "200": "2023-08-04 03:48:23.359173"
+            "200": "2023-08-05 03:22:18.634382"
         },
         "used": {
             "url-check": [
@@ -123,7 +123,7 @@
     "https://publiccodenet.github.io/url-check/url-check-results.json": {
         "checks": {
             "status": 200,
-            "200": "2023-08-04 03:48:23.555057"
+            "200": "2023-08-05 03:22:18.826945"
         },
         "used": {
             "url-check": [
@@ -134,7 +134,7 @@
     "https://pypi.org/project/json5/": {
         "checks": {
             "status": 200,
-            "200": "2023-08-04 03:48:23.647802"
+            "200": "2023-08-05 03:22:18.923513"
         },
         "used": {
             "url-check": [
@@ -145,7 +145,7 @@
     "https://standard.publiccode.net/AUTHORS": {
         "checks": {
             "status": 200,
-            "200": "2023-08-04 03:48:23.772424"
+            "200": "2023-08-05 03:22:19.014240"
         },
         "used": {
             "url-check": [
