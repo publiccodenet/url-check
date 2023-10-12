@@ -179,6 +179,7 @@ def set_used_for_file(
 			checks[url] = {}
 			checks[url]["checks"] = {}
 			checks[url]["used"] = {}
+		checks[url]["url"] = url
 		if name not in checks[url]["used"].keys():
 			checks[url]["used"][name] = []
 		if file not in checks[url]["used"][name]:

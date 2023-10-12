@@ -312,6 +312,7 @@ class Test_url_check(unittest.TestCase):
 
 		expected = {
 				"https://example.net/": {
+				"url": "https://example.net/",
 				"checks": {
 				"status": 200,
 				"200": "2023-03-13 14:00:00.100001"
@@ -321,6 +322,7 @@ class Test_url_check(unittest.TestCase):
 				}
 				},
 				"https://example.org/": {
+				"url": "https://example.org/",
 				"checks": {
 				"status": 200,
 				"200": "2023-03-13 14:00:00.100002"
@@ -330,6 +332,7 @@ class Test_url_check(unittest.TestCase):
 				}
 				},
 				"https://www.bogus.gov/bad": {
+				"url": "https://www.bogus.gov/bad",
 				"checks": {
 				"status": 0,
 				"fail": {
@@ -344,6 +347,7 @@ class Test_url_check(unittest.TestCase):
 				}
 				},
 				"https://www.bogus.gov/bad2": {
+				"url": "https://www.bogus.gov/bad2",
 				"checks": {
 				"status": 0,
 				"200": "2023-03-08 15:25:04.456789",
