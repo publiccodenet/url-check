@@ -375,7 +375,7 @@ def url_check_all(gits_dir,
 	checks = sort_by_key(checks)
 
 	domain_dict = group_by_second_level_domain(checks.keys())
-	pool = multiprocessing.Pool()
+	pool = multiprocessing.Pool(processes=16)
 	pfunc = functools.partial(
 			update_status_codes_for_urls, checks=checks, timeout=timeout, ctx=ctx)
 	updated = pool.map(pfunc, domain_dict.values())
@@ -387,7 +387,8 @@ def url_check_all(gits_dir,
 		for check in group:
 			url = check["url"]
 			updated_checks[url] = check
-	return updated_checks
+
+	return sort_by_key(updated_checks)
 
 
 def condense_results(checks, repos):
