@@ -21,6 +21,14 @@ To date, there has been only limited acceptance testing.
 
 The `url-check.py` depends upon the `docopt` python module.
 This can be installed via `pip` or your package manager, for instance `python3-docopt` on Debian-like systems.
+Tests depend upon `python3-coverage`.
+Badge creation requires `nodejs` and `xmllint`.
+And, naturally, the Makefile require `make`.
+The GitHub workflow requires `wget`.
+
+```
+sudo apt-get install -y libxml2-utils make nodejs python3 python3-docopt wget python3-coverage
+```
 
 The [`url-check-config.json`](url-check-config.json) shows an example of how to configure `url-check.py`.
 
