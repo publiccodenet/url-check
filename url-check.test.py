@@ -15,12 +15,15 @@ class Test_Context:
 
 	def __init__(self, capture=False, verbose=False):
 		self.now_calls = 0
+		self.now_time = ""
 		self.verbose = verbose
 		self.capture = capture
 		self.out = ''
 
 	def now(self):
 		self.now_calls = self.now_calls + 1
+		if (self.now_time != ""):
+			return self.now_time
 		fraction = 100000 + self.now_calls
 		return "2023-03-13 14:00:00." + str(fraction)
 
@@ -315,7 +318,7 @@ class Test_url_check(unittest.TestCase):
 				"url": "https://example.net/",
 				"checks": {
 				"status": 200,
-				"200": "2023-03-13 14:00:00.100001"
+				"200": "2023-04-01 00:00:00.000000"
 				},
 				"used": {
 				"test-data": ["foo.md"]
@@ -325,7 +328,7 @@ class Test_url_check(unittest.TestCase):
 				"url": "https://example.org/",
 				"checks": {
 				"status": 200,
-				"200": "2023-03-13 14:00:00.100002"
+				"200": "2023-04-01 00:00:00.000000"
 				},
 				"used": {
 				"test-data": ["foo.md"]
@@ -338,7 +341,7 @@ class Test_url_check(unittest.TestCase):
 				"fail": {
 				"from": "2023-03-02 15:25:00.123456",
 				"from-code": 404,
-				"to": "2023-03-13 14:00:00.100003",
+				"to": "2023-04-01 00:00:00.000000",
 				"to-code": 0
 				}
 				},
@@ -352,7 +355,7 @@ class Test_url_check(unittest.TestCase):
 				"status": 0,
 				"200": "2023-03-08 15:25:04.456789",
 				"fail": {
-				"from": "2023-03-13 14:00:00.100004",
+				"from": "2023-04-01 00:00:00.000000",
 				"from-code": 0
 				}
 				},
@@ -364,6 +367,7 @@ class Test_url_check(unittest.TestCase):
 		add_ignore = []
 		transforms = []
 		ctx = Test_Context()
+		ctx.now_time = "2023-04-01 00:00:00.000000"
 		timeout = 2
 		checks = uc.url_check_all('.', checks, repos_files, timeout, add_ignore,
 				transforms, ctx)

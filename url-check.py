@@ -4,13 +4,16 @@
 
 import datetime
 import docopt
+import functools
 import json
+import multiprocessing
 import os
 import pathlib
 import re
 import requests
 import subprocess
 import sys
+import urllib
 
 url_check_version = "0.0.0"
 
@@ -224,7 +227,9 @@ def sort_by_key(stuff):
 	return {key: val for key, val in sorted_elems}
 
 
-def status_code_for_url(url, timeout):
+def status_code_for_url(url, timeout, ctx=None):
+	if ctx == None:
+		ctx = default_context()
 	user_agent = 'url-check github.com/publiccodenet/url-check'
 	user_agent += f' v{url_check_version}'
 	headers = {
@@ -239,7 +244,8 @@ def status_code_for_url(url, timeout):
 		response = requests.head(
 				url, allow_redirects=True, timeout=timeout, headers=headers)
 		return response.status_code
-	except Exception:
+	except Exception as e:
+		ctx.debug({'url': url, 'error': e})
 		return 0
 
 
@@ -291,12 +297,14 @@ def read_repos_files(gits_dir, repos, ctx):
 # if we got a 200, then everything is fine again, forget the fails
 # else if it the first fail, set the "fail" "from"
 # otherwise, the values in "fail" "to"
-def update_status(check, status_code, when):
+def update_status(check, status_code, when, ctx):
+	ctx.debug("before check          : ", check)
 	check["status"] = status_code
 	if (status_code == 200):
 		check.pop("200", None)
 		check.pop("fail", None)
 		check["200"] = when
+		ctx.debug("after check (success) : ", check)
 		return
 
 	if "fail" not in check.keys():
@@ -306,6 +314,41 @@ def update_status(check, status_code, when):
 	else:
 		check["fail"]["to"] = when
 		check["fail"]["to-code"] = status_code
+	ctx.debug("after check (fail)    : ", check)
+	return check
+
+
+def update_status_codes_for_urls(urls, checks, timeout, ctx):
+	updated = []
+	ctx.debug("update_status_codes_for_urls:", urls)
+	for url in urls:
+		ctx.log("")
+		when = ctx.now()
+		ctx.log(when, url)
+		status_code = status_code_for_url(url, timeout, ctx)
+		ctx.log(status_code, url)
+		update_status(checks[url]["checks"], status_code, when, ctx)
+		updated.append(checks[url])
+	ctx.debug("updated:", updated)
+	return updated
+
+
+def group_by_second_level_domain(urls):
+	domain_dict = {}
+
+	for url in sorted(set(urls)):
+		parsed_url = urllib.parse.urlparse(url)
+		domain = parsed_url.netloc
+		# split by dot; get the last two parts
+		domain_parts = domain.split('.')[-2:]
+		second_level_domain = '.'.join(domain_parts)
+
+		if second_level_domain not in domain_dict:
+			domain_dict[second_level_domain] = []
+
+		domain_dict[second_level_domain].append(url)
+
+	return domain_dict
 
 
 def url_check_all(gits_dir,
@@ -331,15 +374,20 @@ def url_check_all(gits_dir,
 
 	checks = sort_by_key(checks)
 
-	for url, data in checks.items():
-		ctx.log("")
-		when = ctx.now()
-		ctx.log(when, url)
-		status_code = status_code_for_url(url, timeout)
-		ctx.log(status_code, url)
-		update_status(checks[url]["checks"], status_code, when)
+	domain_dict = group_by_second_level_domain(checks.keys())
+	pool = multiprocessing.Pool()
+	pfunc = functools.partial(
+			update_status_codes_for_urls, checks=checks, timeout=timeout, ctx=ctx)
+	updated = pool.map(pfunc, domain_dict.values())
+	pool.close()
+	pool.join()
 
-	return checks
+	updated_checks = {}
+	for group in updated:
+		for check in group:
+			url = check["url"]
+			updated_checks[url] = check
+	return updated_checks
 
 
 def condense_results(checks, repos):
