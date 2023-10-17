@@ -289,7 +289,13 @@ def read_repos_files(gits_dir, repos, ctx):
 		branch = repo_data.get("branch")
 		ctx.log(repo_name, repo_url, branch)
 		files = files_from_repo(gits_dir, repo_name, repo_url, branch, ctx)
-		repo_files[repo_name] = files
+
+		ignore_map = repo_data.get("ignore_files", {})
+		ignore = ignore_map.keys()
+		# filter elements in files that are not in ignore
+		filtered = [file for file in files if file not in ignore]
+
+		repo_files[repo_name] = filtered
 
 	return repo_files
 

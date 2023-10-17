@@ -185,10 +185,19 @@ class Test_url_check(unittest.TestCase):
 		gits_dir = '/tmp/url-check-tests/gits'
 		repo_name = "url-check"
 		repo_url = "https://github.com/publiccodenet/url-check.git"
-		repos = {repo_name: {"url": repo_url, "branch": "main"}}
+		repos = {
+				repo_name: {
+				"url": repo_url,
+				"branch": "main",
+				"ignore_files": {
+				"README.md": "no reason, really"
+				}
+				}
+		}
 		ctx = Test_Context()
 		repo_files = uc.read_repos_files(gits_dir, repos, ctx)
 		self.assertIn("url-check.test.py", repo_files[repo_name])
+		self.assertNotIn("README.md", repo_files[repo_name])
 
 	def test_transform_urls(self):
 		ctx = Test_Context()

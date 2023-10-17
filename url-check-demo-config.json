@@ -2,7 +2,10 @@
     "repositories": {
         "url-check": {
             "url": "https://github.com/publiccodenet/url-check.git",
-            "branch": "main"
+            "branch": "main",
+            "ignore_files": {
+                "url-check-demo-config.json": "do not check exclude URLs"
+            }
         },
         "url-check-bad": {
             "url": "https://github.com/publiccodenet/url-check.git",
