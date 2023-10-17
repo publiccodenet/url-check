@@ -1,37 +1,6 @@
 {
-    "urls": {
-        "http://bogus\\.gov": {
-            "checks": {
-                "status": 0,
-                "fail": {
-                    "from": "2023-10-17 10:08:49.171426",
-                    "from-code": 0
-                }
-            },
-            "used": {
-                "url-check": [
-                    "url-check-demo-config.json"
-                ]
-            },
-            "url": "http://bogus\\.gov"
-        },
-        "https://": {
-            "checks": {
-                "status": 0,
-                "fail": {
-                    "from": "2023-10-17 10:08:49.173087",
-                    "from-code": 0
-                }
-            },
-            "used": {
-                "url-check": [
-                    "url-check-demo-config.json"
-                ]
-            },
-            "url": "https://"
-        }
-    },
+    "urls": {},
     "repos": {
-        "url-check": "failing"
+        "url-check": "passing"
     }
 }

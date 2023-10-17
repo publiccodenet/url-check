@@ -1,42 +1,12 @@
 {
     "urls": {
-        "http://bogus\\.gov": {
-            "checks": {
-                "status": 0,
-                "fail": {
-                    "from": "2023-10-17 10:08:49.171426",
-                    "from-code": 0
-                }
-            },
-            "used": {
-                "url-check": [
-                    "url-check-demo-config.json"
-                ]
-            },
-            "url": "http://bogus\\.gov"
-        },
-        "https://": {
-            "checks": {
-                "status": 0,
-                "fail": {
-                    "from": "2023-10-17 10:08:49.173087",
-                    "from-code": 0
-                }
-            },
-            "used": {
-                "url-check": [
-                    "url-check-demo-config.json"
-                ]
-            },
-            "url": "https://"
-        },
         "https://publiccodenet.github.io/url-check/sir-not-appearing.html": {
             "checks": {
                 "status": 404,
                 "fail": {
                     "from": "2023-05-17 15:12:44.330560",
                     "from-code": 404,
-                    "to": "2023-10-17 10:08:49.458861",
+                    "to": "2023-10-17 11:33:20.240370",
                     "to-code": 404
                 }
             },
@@ -49,7 +19,7 @@
         }
     },
     "repos": {
-        "url-check": "failing",
+        "url-check": "passing",
         "url-check-bad": "failing"
     }
 }
