@@ -71,6 +71,7 @@ class Test_url_check(unittest.TestCase):
 	def test_urls_from(self):
 		paren_url = 'https://example.org/foo_(bar).svg'
 		markdown_style = "[b-(baz)](http://example.org/b-(baz))"
+		markdown_style_with_anchor = "[Agenda](https://example.org/index.html#agenda)"
 		gits_dir = '/tmp/url-check-tests/gits'
 		# gits_dir = '..'
 		name = "url-check"
@@ -84,6 +85,7 @@ class Test_url_check(unittest.TestCase):
 		self.assertIn(paren_url, found)
 		self.assertIn('http://example.org/' + 'b-(baz)', found)
 		self.assertNotIn('http://example.org/' + 'b-(baz))', found)
+		self.assertIn('http://example.org/index.html', found)
 
 	def test_clear_previous_used(self):
 		name1 = "blog.example.net"

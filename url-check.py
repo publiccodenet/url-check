@@ -117,6 +117,10 @@ def files_from_repo(repos_basedir, repo_name, repo_url, branch, ctx=None):
 
 def urls_from(workdir, file, user_ignore_patterns=[], ctx=None):
 	# pull URLs out of the file, including option leading paren
+	# TODO: Regex does not fully conform to RFC 3986 URI Generic Syntax.
+	#	Some valid characters are only valid in parts of the URI.
+	#	Some valid characters are not matched by the current regex,
+	#		e.g.: http://example.org/foo#named-anchor
 	cmd_str = f"grep --extended-regexp --only-matching --text \
 		'[\\(]?(http|https)://[-a-zA-Z0-9\./\\?=_%:\\(\\)]*' \
 		'{file}'"
@@ -141,6 +145,11 @@ def urls_from(workdir, file, user_ignore_patterns=[], ctx=None):
 	lines = shell_slurp(cmd_str, workdir, ctx).splitlines()
 	urls = []
 	for line in lines:
+		if line.startswith("(http"):
+			# In the case of a named anchor,
+			# the trailing parenthesis is missing,
+			# for now, just chop-off leading parenthesis.
+			line = line[1:]
 		# ignore 'binary file matches' messages, only grab URLs
 		if line.startswith("http"):
 			urls += [line]
