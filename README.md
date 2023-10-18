@@ -57,6 +57,8 @@ Please see our [code of conduct](CODE_OF_CONDUCT.md).
 
 ### Longer term
 
+* specify plug-able parsing strategies
+  * e.g.: for a GH Pages repo, specify that certain files should be sent to a jekyll build script
 * include URLs that were skipped in the full reports
 * allow testing of multiple branches
   * can be done with multiple entries in the config, maybe not needed
