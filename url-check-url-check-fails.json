@@ -1,6 +1,22 @@
 {
-    "urls": {},
+    "urls": {
+        "https://example.net/).\\": {
+            "checks": {
+                "status": 404,
+                "fail": {
+                    "from": "2023-10-18 03:22:40.350111",
+                    "from-code": 404
+                }
+            },
+            "used": {
+                "url-check": [
+                    "url-check.test.py"
+                ]
+            },
+            "url": "https://example.net/).\\"
+        }
+    },
     "repos": {
-        "url-check": "passing"
+        "url-check": "failing"
     }
 }
