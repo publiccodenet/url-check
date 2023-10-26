@@ -42,6 +42,7 @@ Options:
         -t SECONDS, --timeout=SECONDS
                                 timeout set on the request
                                 [default: {default_timeout}]
+        -d, --dry-run           do not fetch the URLs or update the checks
 
         -h, --help              Prints this message
         -V, --version           Prints the version ({url_check_version})
@@ -86,8 +87,9 @@ def shell_slurp(cmd_str, working_dir=os.getcwd(), ctx=None, fail_func=None):
 	if (result.returncode and fail_func):
 		return fail_func(result)
 
-	text = result.stdout.decode("utf-8")
+	text = result.stdout.decode("utf-8").strip()
 	ctx.debug(text)
+
 	return text
 
 
@@ -115,18 +117,31 @@ def files_from_repo(repos_basedir, repo_name, repo_url, branch, ctx=None):
 	return files
 
 
-def urls_from(workdir, file, user_ignore_patterns=[], ctx=None):
+def urls_from(workdir, file, transforms, user_ignore_patterns=[], ctx=None):
+
 	# pull URLs out of the file, including option leading paren
 	# TODO: Regex does not fully conform to RFC 3986 URI Generic Syntax.
 	#	Some valid characters are only valid in parts of the URI.
-	#	Some valid characters are not matched by the current regex,
-	#		e.g.: http://example.org/foo#named-anchor
+	#	Some valid characters are not matched by the current regex
+	# Note: Single quote escaping is hard to read, in a bash single quoted
+	#	string, the sequence {'"'"'} becomes {'} by:
+	#	* ending the single-quoted string
+	#	* starting a double-quoted string
+	#	* having a single quote inside the double quotes
+	#	* ending the double-quoted string
+	#	* starting a new single-quoted string
+	#	Below, the single quotes need to be escaped by python:
+	url_pattern = 'http[s]?://[^[:space:]<>"`\'"\'"\']+'
 	cmd_str = f"grep --extended-regexp --only-matching --text \
-		'[\\(]?(http|https)://[-a-zA-Z0-9\./\\?=_%:\\(\\)]*' \
+		'[\\(]?{url_pattern}' \
 		'{file}'"
+
+	for transform in transforms:
+		cmd_str = cmd_str + f" | {transform}"
 
 	# remove surrounding parens if they exist
 	cmd_str += " | sed -e 's/^(http\\(.*\\))[\\.,]\\?$/http\\1/g'"
+
 	# de-duplicate
 	cmd_str += " | sort --unique"
 
@@ -164,28 +179,10 @@ def clear_previous_used(checks, name):
 			checks[url]["used"][name] = []
 
 
-def transform_urls(transforms, urls, ctx):
-	urls_str = "\n".join(urls)
-
-	cmd = f"echo '{urls_str}'"
-	for transform in transforms:
-		cmd = cmd + f" | {transform}"
-
-	urls_str = shell_slurp(cmd, ".", ctx)
-
-	transformed_urls = []
-	for line in urls_str.splitlines():
-		if line.startswith("http"):
-			transformed_urls += [line]
-
-	return transformed_urls
-
-
 def set_used_for_file(
 		checks, gits_dir, name, file, ignore_patterns, transforms, ctx):
 	repo_dir = os.path.join(gits_dir, name)
-	urls = urls_from(repo_dir, file, ignore_patterns, ctx)
-	urls = transform_urls(transforms, urls, ctx)
+	urls = urls_from(repo_dir, file, transforms, ignore_patterns, ctx)
 	for url in urls:
 		if url not in checks.keys():
 			checks[url] = {}
@@ -268,6 +265,7 @@ def status_code_for_url(url, timeout, ctx=None):
 class System_Context:
 
 	verbose = False
+	dry_run = False
 
 	def now(self):
 		return str(datetime.datetime.utcnow())
@@ -340,7 +338,10 @@ def update_status_codes_for_urls(urls, checks, timeout, ctx):
 		ctx.log("")
 		when = ctx.now()
 		ctx.log(when, url)
-		status_code = status_code_for_url(url, timeout, ctx)
+		if ctx.dry_run:
+			status_code = -1
+		else:
+			status_code = status_code_for_url(url, timeout, ctx)
 		ctx.log(status_code, url)
 		update_status(checks[url]["checks"], status_code, when, ctx)
 		updated.append(checks[url])
@@ -348,11 +349,18 @@ def update_status_codes_for_urls(urls, checks, timeout, ctx):
 	return updated
 
 
-def group_by_second_level_domain(urls):
+def group_by_second_level_domain(urls, ctx):
 	domain_dict = {}
 
 	for url in sorted(set(urls)):
-		parsed_url = urllib.parse.urlparse(url)
+		try:
+			parsed_url = urllib.parse.urlparse(url)
+		except Exception as e:
+			if ctx == None:
+				ctx = default_context()
+			ctx.debug({'url': url, 'error': e})
+			continue
+
 		domain = parsed_url.netloc
 		# split by dot; get the last two parts
 		domain_parts = domain.split('.')[-2:]
@@ -389,7 +397,7 @@ def url_check_all(gits_dir,
 
 	checks = sort_by_key(checks)
 
-	domain_dict = group_by_second_level_domain(checks.keys())
+	domain_dict = group_by_second_level_domain(checks.keys(), ctx)
 	pool = multiprocessing.Pool(processes=16)
 	pfunc = functools.partial(
 			update_status_codes_for_urls, checks=checks, timeout=timeout, ctx=ctx)
@@ -466,6 +474,7 @@ def main(sys_argv=sys.argv, ctx=default_context()):
 		ctx.log(f"version {url_check_version}")
 		return
 
+	ctx.dry_run = args['--dry-run']
 	gits_dir = args['--gits-dir']
 	cfg_path = args['--config']
 	checks_path = args['--results']
@@ -475,6 +484,7 @@ def main(sys_argv=sys.argv, ctx=default_context()):
 	repos_info = config_obj["repositories"]
 	ignore_patterns_map = config_obj.get("ignore_patterns", {})
 	add_ignore_patterns = ignore_patterns_map.keys()
+	# TODO: transforms_map should be ordered, perhaps convert to list?
 	transforms_map = config_obj.get("transforms", {})
 	transforms = transforms_map.keys()
 
@@ -484,10 +494,13 @@ def main(sys_argv=sys.argv, ctx=default_context()):
 	checks = url_check_all(gits_dir, orig_checks, repos_files, timeout,
 			add_ignore_patterns, transforms, ctx)
 
+	if ctx.dry_run:
+		ctx.log(checks)
+		return
+
 	write_json(checks_path, checks)
 	condensed = condense_results(checks, repos_info.keys())
 	write_json(check_fails_json, condensed)
-
 	repo_results(repos_info, checks, checks_path, check_fails_json)
 
 

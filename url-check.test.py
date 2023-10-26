@@ -13,10 +13,11 @@ uc = __import__("url-check")
 
 class Test_Context:
 
-	def __init__(self, capture=False, verbose=False):
+	def __init__(self, capture=False, verbose=False, dry_run=False):
 		self.now_calls = 0
 		self.now_time = ""
 		self.verbose = verbose
+		self.dry_run = dry_run
 		self.capture = capture
 		self.out = ''
 
@@ -77,15 +78,34 @@ class Test_url_check(unittest.TestCase):
 		name = "url-check"
 		workdir = os.path.join(gits_dir, name)
 		file = "url-check.test.py"
-		our_ignore_patters = ['^http[s]\?://bogus.gov']
-		ctx = Test_Context()
-		found = uc.urls_from(workdir, file, our_ignore_patters, ctx)
+		transform_urls = [
+				'https://example.com/one.html).',
+				'https://example.com/obsolete.html',
+				'https://example.com/three.html',
+		]
+		transforms = [
+				f"sed 's@obsolete\\.html@TEMPFIX.html@g'",
+				f"sed 's@TEMPFIX\\.html@two.html@g'",
+				f"sed 's@\\(.*html\\)[\\.,):!]*$@\\1@g'",
+		]
+		ignores = ['^http[s]\?://bogus.gov']
+		# ctx = Test_Context()
+		ctx = Test_Context(capture=True)
+		found = uc.urls_from(workdir, file, transforms, ignores, ctx)
+		print(ctx.out)
 		self.assertIn("https://example.org/", found)
 		self.assertNotIn("http://bogus.gov", found)
 		self.assertIn(paren_url, found)
 		self.assertIn('http://example.org/' + 'b-(baz)', found)
 		self.assertNotIn('http://example.org/' + 'b-(baz))', found)
 		self.assertIn('http://example.org/index.html', found)
+		# transforms
+		self.assertNotIn('https://example.com/' + 'one.html).', found)
+		self.assertNotIn('https://example.com/' + 'obsolete.html', found)
+		self.assertNotIn('https://example.com/' + 'TEMPFIX.html', found)
+		self.assertIn('https://example.com/' + 'one.html', found)
+		self.assertIn('https://example.com/' + 'two.html', found)
+		self.assertIn('https://example.com/' + 'three.html', found)
 
 	def test_clear_previous_used(self):
 		name1 = "blog.example.net"
@@ -200,32 +220,6 @@ class Test_url_check(unittest.TestCase):
 		repo_files = uc.read_repos_files(gits_dir, repos, ctx)
 		self.assertIn("url-check.test.py", repo_files[repo_name])
 		self.assertNotIn("README.md", repo_files[repo_name])
-
-	def test_transform_urls(self):
-		ctx = Test_Context()
-		ctx.capture = True
-		ctx.verbose = True
-		transforms = []
-		urls = [
-				'https://example.org/one.html',
-				'https://example.org/obsolete.html',
-				'https://example.org/three.html',
-		]
-		transformed = uc.transform_urls(transforms, urls, ctx)
-		self.assertEqual(transformed, urls)
-
-		transforms = [
-				f"sed 's@obsolete\\.html@foo.html)@g'",
-				f"sed 's@foo@two@g'",
-				f"sed 's@\\(example.org/.*\\)[\\.,)]$@\\1@g'",
-		]
-		expected_urls = [
-				'https://example.org/one.html',
-				'https://example.org/two.html',
-				'https://example.org/three.html',
-		]
-		transformed = uc.transform_urls(transforms, urls, ctx)
-		self.assertEqual(transformed, expected_urls, ctx.out)
 
 	def test_remove_unused(self):
 		url3 = "https://example.org/three.html"
