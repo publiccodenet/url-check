@@ -1,12 +1,57 @@
 {
     "urls": {
+        "https://example.com/obsolete.html": {
+            "checks": {
+                "status": 404,
+                "fail": {
+                    "from": "2023-10-27 03:21:51.560536",
+                    "from-code": 404
+                }
+            },
+            "used": {
+                "url-check": [
+                    "url-check.test.py"
+                ]
+            },
+            "url": "https://example.com/obsolete.html"
+        },
+        "https://example.com/one.html).": {
+            "checks": {
+                "status": 404,
+                "fail": {
+                    "from": "2023-10-27 03:21:51.724252",
+                    "from-code": 404
+                }
+            },
+            "used": {
+                "url-check": [
+                    "url-check.test.py"
+                ]
+            },
+            "url": "https://example.com/one.html)."
+        },
+        "https://example.com/three.html": {
+            "checks": {
+                "status": 404,
+                "fail": {
+                    "from": "2023-10-27 03:21:51.879907",
+                    "from-code": 404
+                }
+            },
+            "used": {
+                "url-check": [
+                    "url-check.test.py"
+                ]
+            },
+            "url": "https://example.com/three.html"
+        },
         "https://example.net/).\\": {
             "checks": {
                 "status": 404,
                 "fail": {
                     "from": "2023-10-18 03:22:40.350111",
                     "from-code": 404,
-                    "to": "2023-10-26 03:21:50.074178",
+                    "to": "2023-10-27 03:21:51.626249",
                     "to-code": 404
                 }
             },
@@ -16,6 +61,21 @@
                 ]
             },
             "url": "https://example.net/).\\"
+        },
+        "https://example.org/.*\\\\)[\\\\.,)]$@\\\\1@": {
+            "checks": {
+                "status": 404,
+                "fail": {
+                    "from": "2023-10-27 03:21:51.358751",
+                    "from-code": 404
+                }
+            },
+            "used": {
+                "url-check": [
+                    "url-check-config.json"
+                ]
+            },
+            "url": "https://example.org/.*\\\\)[\\\\.,)]$@\\\\1@"
         }
     },
     "repos": {
