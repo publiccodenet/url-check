@@ -2,7 +2,13 @@
     "repositories": {
         "url-check": {
             "url": "https://github.com/publiccodenet/url-check.git",
-            "branch": "main"
+            "branch": "main",
+            "ignore_files": {
+                "url-check-config.json": "do not check exclude URLs",
+                "url-check-demo-config.json": "do not check exclude URLs",
+                "url-check-run-config.json": "do not check exclude URLs",
+                "url-check.test.py": "all URLs are bogus"
+            }
         }
     },
     "ignore_patterns": {
@@ -11,7 +17,5 @@
         "^http[s]\\?://docs\\.github\\.com/": "seems blocked as DoS protection"
     },
     "transforms" : {
-	"sed 's@^\\(https://example.org/.*\\)[\\.,)]$@\\1@'":
-		"remove trailing punctuation from example.org links"
     }
 }

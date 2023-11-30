@@ -72,8 +72,7 @@ def read_json(json_file):
 # spawn a shell to run the commmand(s),
 # returns the text which would have been output to the screen
 def shell_slurp(cmd_str, working_dir=os.getcwd(), ctx=None, fail_func=None):
-	if ctx == None:
-		ctx = default_context()
+	ctx = ensure_context(ctx)
 	ctx.debug(f"working_dir={working_dir}")
 	ctx.debug(cmd_str)
 	result = subprocess.run(
@@ -234,8 +233,6 @@ def sort_by_key(stuff):
 
 
 def status_code_for_url(url, timeout, ctx=None):
-	if ctx == None:
-		ctx = default_context()
 	user_agent = 'url-check github.com/publiccodenet/url-check'
 	user_agent += f' v{url_check_version}'
 	headers = {
@@ -251,6 +248,7 @@ def status_code_for_url(url, timeout, ctx=None):
 				url, allow_redirects=True, timeout=timeout, headers=headers)
 		return response.status_code
 	except Exception as e:
+		ctx = ensure_context(ctx)
 		ctx.debug({'url': url, 'error': e})
 		return 0
 
@@ -280,13 +278,13 @@ class System_Context:
 
 global_context = None
 
-
-def default_context():
-	global global_context
-	if (global_context == None):
-		global_context = System_Context()
-	return global_context
-
+def ensure_context(ctx):
+	if (ctx == None):
+		global global_context
+		if (global_context == None):
+			global_context = System_Context()
+		return global_context
+	return ctx
 
 def read_repos_files(gits_dir, repos, ctx):
 	repo_files = {}
@@ -338,9 +336,8 @@ def update_status_codes_for_urls(urls, checks, timeout, ctx):
 		ctx.log("")
 		when = ctx.now()
 		ctx.log(when, url)
-		if ctx.dry_run:
-			status_code = -1
-		else:
+		status_code = -1
+		if not ctx.dry_run:
 			status_code = status_code_for_url(url, timeout, ctx)
 		ctx.log(status_code, url)
 		update_status(checks[url]["checks"], status_code, when, ctx)
@@ -356,8 +353,7 @@ def group_by_second_level_domain(urls, ctx):
 		try:
 			parsed_url = urllib.parse.urlparse(url)
 		except Exception as e:
-			if ctx == None:
-				ctx = default_context()
+			ctx = ensure_context(ctx)
 			ctx.debug({'url': url, 'error': e})
 			continue
 
@@ -466,8 +462,10 @@ def repo_results(repos_info, checks, checks_path, check_fails_json):
 				check_fails_json)
 
 
-def main(sys_argv=sys.argv, ctx=default_context()):
+def main(sys_argv=sys.argv, ctx=None):
 	args = docopt.docopt(docopt_str, argv=sys_argv[1:])
+
+	ctx = ensure_context(ctx)
 	ctx.verbose = args['--verbose']
 	ctx.debug(args)
 	if args['--version']:
@@ -494,7 +492,7 @@ def main(sys_argv=sys.argv, ctx=default_context()):
 	checks = url_check_all(gits_dir, orig_checks, repos_files, timeout,
 			add_ignore_patterns, transforms, ctx)
 
-	if ctx.dry_run:
+	if ctx.dry_run: # pragma: no cover
 		ctx.log(checks)
 		return
 

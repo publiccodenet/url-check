@@ -2,19 +2,16 @@
     "repositories": {
         "url-check": {
             "url": "https://github.com/publiccodenet/url-check.git",
-            "branch": "main"
+            "branch": "main",
+            "ignore_files": {
+                "url-check-config.json": "do not check exclude URLs",
+                "url-check-demo-config.json": "do not check exclude URLs",
+                "url-check-run-config.json": "do not check exclude URLs",
+                "url-check.test.py": "all URLs are bogus"
+            }
         }
     },
     "ignore_patterns": {
-        "^http://bogus.gov": "used in test",
-        "^https://example.org/foo": "used in test",
-        "^https://example.org/obsolete.html": "used in test",
-        "^https://example.org/one.html": "used in test",
-        "^https://example.org/three.html": "used in test",
-        "^https://www.bogus.gov/bad": "used in test",
-        "^https://www.bogus.gov/bad2": "used in test",
-        "^https://www.example.org/bad3": "used in test",
-	"^http://example.org/b-(baz)": "used in test",
         "^https://publiccodenet.github.io/url-check/status": "in TODO",
         "^http[s]\\?://twitter\\.com": "302; does not serve scripts",
         "^http[s]\\?://github\\.com/.*/edit/": "may point to yet-to-exist page",

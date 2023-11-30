@@ -64,7 +64,8 @@ check: url-check.test.py
 	@echo "SUCCESS $@"
 
 .coverage: url-check.test.py url-check.py
-	 $(COVERAGE) run url-check.test.py
+	 $(COVERAGE) run --concurrency=multiprocessing url-check.test.py
+	 $(COVERAGE) combine
 
 .PHONY: coverage
 coverage: .coverage

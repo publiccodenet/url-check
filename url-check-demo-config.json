@@ -4,7 +4,10 @@
             "url": "https://github.com/publiccodenet/url-check.git",
             "branch": "main",
             "ignore_files": {
-                "url-check-demo-config.json": "do not check exclude URLs"
+                "url-check-config.json": "do not check exclude URLs",
+                "url-check-demo-config.json": "do not check exclude URLs",
+                "url-check-run-config.json": "do not check exclude URLs",
+                "url-check.test.py": "all URLs are bogus"
             }
         },
         "url-check-bad": {
@@ -13,9 +16,6 @@
         }
     },
     "ignore_patterns": {
-        "^http://bogus\\.gov": "used in test",
-        "^https://[^/]*bogus\\.gov/.*": "used in test",
-        "^http[s]\\?://[^/]*example\\.org/.*": "used in test",
         "^https://publiccodenet.github.io/url-check/status": "in TODO",
         "^http[s]\\?://twitter\\.com": "302; does not serve scripts",
         "^http[s]\\?://github\\.com/.*/edit/": "may point to yet-to-exist page",
