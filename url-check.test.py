@@ -449,6 +449,19 @@ class Test_url_check(unittest.TestCase):
 		checks_json = os.path.join(gits_dir, 'test-repos-checks.json')
 		uc.write_json(checks_json, {})
 
+		dry_run_argv = [
+				'url-check',
+				'--dry-run',
+				f'--gits-dir={gits_dir}',
+				f'--config={config_path}',
+				f'--results={checks_json}',
+		]
+		ctx = Test_Context(capture=True)
+		uc.main(dry_run_argv, ctx)
+		checks = uc.read_json(checks_json)
+		self.assertEqual(checks, {})
+		self.assertIn("https://example.org/", ctx.out)
+
 		argv = [
 				'url-check',
 				'--verbose',
@@ -456,7 +469,7 @@ class Test_url_check(unittest.TestCase):
 				f'--config={config_path}',
 				f'--results={checks_json}',
 		]
-		ctx = Test_Context()
+		ctx = Test_Context(capture=False)
 		uc.main(argv, ctx)
 		checks = uc.read_json(checks_json)
 		check = checks["https://example.org/"]

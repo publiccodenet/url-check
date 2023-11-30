@@ -488,7 +488,7 @@ def main(sys_argv=sys.argv, ctx=None):
 	checks = url_check_all(gits_dir, orig_checks, repos_files, timeout,
 			add_ignore_patterns, transforms, ctx)
 
-	if ctx.dry_run:  # pragma: no cover
+	if ctx.dry_run:
 		ctx.log(checks)
 		return
 
