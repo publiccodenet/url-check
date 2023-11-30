@@ -352,7 +352,7 @@ def group_by_second_level_domain(urls, ctx):
 	for url in sorted(set(urls)):
 		try:
 			parsed_url = urllib.parse.urlparse(url)
-		except Exception as e:
+		except Exception as e: # pragma: no cover
 			ctx = ensure_context(ctx)
 			ctx.debug({'url': url, 'error': e})
 			continue
