@@ -11,6 +11,14 @@ import unittest
 uc = __import__("url-check")
 
 
+def sort_dict_of_lists(unsorted):
+	copy = {}
+	for key in sorted(unsorted.keys()):
+		copy[key] = sorted(unsorted[key])
+
+	return copy
+
+
 class Test_Context:
 
 	def __init__(self, capture=False, verbose=False, dry_run=False):
@@ -92,7 +100,6 @@ class Test_url_check(unittest.TestCase):
 		# ctx = Test_Context()
 		ctx = Test_Context(capture=True)
 		found = uc.urls_from(workdir, file, transforms, ignores, ctx)
-		print(ctx.out)
 		self.assertIn("https://example.org/", found)
 		self.assertNotIn("http://bogus.gov", found)
 		self.assertIn(paren_url, found)
@@ -393,6 +400,34 @@ class Test_url_check(unittest.TestCase):
 		repos = ["good-data", "test-data"]
 		condensed = uc.condense_results(checks, repos)
 		self.assertEqual(condensed, expected_condensed)
+
+	def test_group_by_second_level_domain(self):
+		ctx = Test_Context(capture=True, verbose=True)
+		urls = [
+				"http://example.org/foo.html",
+				"http://example.org/bar.html",
+				"http://example.org/baz.html",
+				"http://example.net/whiz.html",
+				"http://example.net/bang.html",
+				"NOT A VALID URL",
+		]
+		actual = uc.group_by_second_level_domain(urls, ctx)
+		expected = {
+				"": ["NOT A VALID URL"],
+				"example.org": [
+				"http://example.org/foo.html",
+				"http://example.org/bar.html",
+				"http://example.org/baz.html",
+				],
+				"example.net": [
+				"http://example.net/whiz.html",
+				"http://example.net/bang.html",
+				],
+		}
+		actual = sort_dict_of_lists(actual)
+		expected = sort_dict_of_lists(expected)
+		self.assertEqual(actual, expected)
+		self.assertEqual("", ctx.out)
 
 	def test_main_version(self):
 		argv = ['url-check', '--version']

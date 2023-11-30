@@ -278,6 +278,7 @@ class System_Context:
 
 global_context = None
 
+
 def ensure_context(ctx):
 	if (ctx == None):
 		global global_context
@@ -285,6 +286,7 @@ def ensure_context(ctx):
 			global_context = System_Context()
 		return global_context
 	return ctx
+
 
 def read_repos_files(gits_dir, repos, ctx):
 	repo_files = {}
@@ -350,13 +352,7 @@ def group_by_second_level_domain(urls, ctx):
 	domain_dict = {}
 
 	for url in sorted(set(urls)):
-		try:
-			parsed_url = urllib.parse.urlparse(url)
-		except Exception as e: # pragma: no cover
-			ctx = ensure_context(ctx)
-			ctx.debug({'url': url, 'error': e})
-			continue
-
+		parsed_url = urllib.parse.urlparse(url)
 		domain = parsed_url.netloc
 		# split by dot; get the last two parts
 		domain_parts = domain.split('.')[-2:]
@@ -492,7 +488,7 @@ def main(sys_argv=sys.argv, ctx=None):
 	checks = url_check_all(gits_dir, orig_checks, repos_files, timeout,
 			add_ignore_patterns, transforms, ctx)
 
-	if ctx.dry_run: # pragma: no cover
+	if ctx.dry_run:  # pragma: no cover
 		ctx.log(checks)
 		return
 
