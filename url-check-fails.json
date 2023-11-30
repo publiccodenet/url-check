@@ -1,97 +1,12 @@
 {
     "urls": {
-        "https://example.com/obsolete.html": {
-            "checks": {
-                "status": 404,
-                "fail": {
-                    "from": "2023-10-27 03:21:51.560536",
-                    "from-code": 404,
-                    "to": "2023-11-30 03:22:57.094702",
-                    "to-code": 404
-                }
-            },
-            "used": {
-                "url-check": [
-                    "url-check.test.py"
-                ]
-            },
-            "url": "https://example.com/obsolete.html"
-        },
-        "https://example.com/one.html).": {
-            "checks": {
-                "status": 404,
-                "fail": {
-                    "from": "2023-10-27 03:21:51.724252",
-                    "from-code": 404,
-                    "to": "2023-11-30 03:22:57.245646",
-                    "to-code": 404
-                }
-            },
-            "used": {
-                "url-check": [
-                    "url-check.test.py"
-                ]
-            },
-            "url": "https://example.com/one.html)."
-        },
-        "https://example.com/three.html": {
-            "checks": {
-                "status": 404,
-                "fail": {
-                    "from": "2023-10-27 03:21:51.879907",
-                    "from-code": 404,
-                    "to": "2023-11-30 03:22:57.347430",
-                    "to-code": 404
-                }
-            },
-            "used": {
-                "url-check": [
-                    "url-check.test.py"
-                ]
-            },
-            "url": "https://example.com/three.html"
-        },
-        "https://example.net/).\\": {
-            "checks": {
-                "status": 404,
-                "fail": {
-                    "from": "2023-10-18 03:22:40.350111",
-                    "from-code": 404,
-                    "to": "2023-11-30 03:22:57.176050",
-                    "to-code": 404
-                }
-            },
-            "used": {
-                "url-check": [
-                    "url-check.test.py"
-                ]
-            },
-            "url": "https://example.net/).\\"
-        },
-        "https://example.org/.*\\\\)[\\\\.,)]$@\\\\1@": {
-            "checks": {
-                "status": 404,
-                "fail": {
-                    "from": "2023-10-27 03:21:51.358751",
-                    "from-code": 404,
-                    "to": "2023-11-30 03:22:57.027531",
-                    "to-code": 404
-                }
-            },
-            "used": {
-                "url-check": [
-                    "url-check-config.json"
-                ]
-            },
-            "url": "https://example.org/.*\\\\)[\\\\.,)]$@\\\\1@"
-        },
         "https://publiccodenet.github.io/url-check/sir-not-appearing.html": {
             "checks": {
                 "status": 404,
                 "fail": {
                     "from": "2023-05-17 15:12:44.330560",
                     "from-code": 404,
-                    "to": "2023-11-30 03:22:57.202626",
+                    "to": "2023-11-30 12:36:52.369962",
                     "to-code": 404
                 }
             },
@@ -104,7 +19,7 @@
         }
     },
     "repos": {
-        "url-check": "failing",
+        "url-check": "passing",
         "url-check-bad": "failing"
     }
 }
