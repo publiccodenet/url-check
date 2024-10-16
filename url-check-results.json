@@ -2,7 +2,7 @@
     "https://github.com/publiccodenet/url-check/tree/demo-bad-link/": {
         "checks": {
             "status": 200,
-            "200": "2024-10-15 03:33:58.557631"
+            "200": "2024-10-16 03:46:04.559157"
         },
         "used": {
             "url-check": [
@@ -14,7 +14,7 @@
     "https://github.com/publiccodenet/url-check/tree/main/": {
         "checks": {
             "status": 200,
-            "200": "2024-10-15 03:33:59.105943"
+            "200": "2024-10-16 03:46:05.191861"
         },
         "used": {
             "url-check": [
@@ -26,7 +26,7 @@
     "https://publiccodenet.github.io/publiccodenet-url-check/": {
         "checks": {
             "status": 200,
-            "200": "2024-10-15 03:33:58.557691"
+            "200": "2024-10-16 03:46:04.559210"
         },
         "used": {
             "url-check": [
@@ -38,7 +38,7 @@
     "https://publiccodenet.github.io/url-check/": {
         "checks": {
             "status": 200,
-            "200": "2024-10-15 03:33:58.648993"
+            "200": "2024-10-16 03:46:04.713176"
         },
         "used": {
             "url-check": [
@@ -56,7 +56,7 @@
             "fail": {
                 "from": "2023-05-17 15:12:44.330560",
                 "from-code": 404,
-                "to": "2024-10-15 03:33:58.728812",
+                "to": "2024-10-16 03:46:04.993940",
                 "to-code": 404
             }
         },
@@ -70,7 +70,7 @@
     "https://publiccodenet.github.io/url-check/url-check-results.json": {
         "checks": {
             "status": 200,
-            "200": "2024-10-15 03:33:58.799658"
+            "200": "2024-10-16 03:46:05.148924"
         },
         "used": {
             "url-check": [
@@ -82,7 +82,7 @@
     "https://pypi.org/project/json5/": {
         "checks": {
             "status": 200,
-            "200": "2024-10-15 03:33:58.557771"
+            "200": "2024-10-16 03:46:04.559341"
         },
         "used": {
             "url-check": [
@@ -94,7 +94,7 @@
     "https://standard.publiccode.net/AUTHORS": {
         "checks": {
             "status": 200,
-            "200": "2024-10-15 03:33:58.557840"
+            "200": "2024-10-16 03:46:04.559998"
         },
         "used": {
             "url-check": [
