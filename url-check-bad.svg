@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- SPDX-License-Identifier: CC0-1.0 -->
 <!-- SPDX-FileCopyrightText: 2023 The Foundation for Public Code <info@publiccode.net> -->
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="192" height="20" role="img" aria-label="link check: demo-bad-link failing">
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="20" role="img" aria-label="link check: demo-bad-link failing">
   <title>link check: demo-bad-link failing</title>
   <linearGradient id="s" x2="0" y2="100%">
     <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
