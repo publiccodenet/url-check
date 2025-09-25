@@ -1,12 +1,28 @@
 {
     "urls": {
+        "https://github.com/publiccodenet/url-check/tree/main/": {
+            "checks": {
+                "status": 0,
+                "200": "2025-09-24 03:31:37.301239",
+                "fail": {
+                    "from": "2025-09-25 03:27:27.668104",
+                    "from-code": 0
+                }
+            },
+            "used": {
+                "url-check": [
+                    "_site/index.html"
+                ]
+            },
+            "url": "https://github.com/publiccodenet/url-check/tree/main/"
+        },
         "https://publiccodenet.github.io/url-check/sir-not-appearing.html": {
             "checks": {
                 "status": 404,
                 "fail": {
                     "from": "2023-05-17 15:12:44.330560",
                     "from-code": 404,
-                    "to": "2025-09-24 03:31:36.979112",
+                    "to": "2025-09-25 03:27:27.165210",
                     "to-code": 404
                 }
             },
@@ -19,7 +35,7 @@
         }
     },
     "repos": {
-        "url-check": "passing",
+        "url-check": "failing",
         "url-check-bad": "failing"
     }
 }
