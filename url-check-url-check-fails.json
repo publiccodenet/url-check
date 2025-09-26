@@ -1,23 +1,6 @@
 {
-    "urls": {
-        "https://github.com/publiccodenet/url-check/tree/main/": {
-            "checks": {
-                "status": 0,
-                "200": "2025-09-24 03:31:37.301239",
-                "fail": {
-                    "from": "2025-09-25 03:27:27.668104",
-                    "from-code": 0
-                }
-            },
-            "used": {
-                "url-check": [
-                    "_site/index.html"
-                ]
-            },
-            "url": "https://github.com/publiccodenet/url-check/tree/main/"
-        }
-    },
+    "urls": {},
     "repos": {
-        "url-check": "failing"
+        "url-check": "passing"
     }
 }
