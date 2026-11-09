@@ -1,39 +1,6 @@
 {
-    "urls": {
-        "https://github.com/publiccodenet/url-check/tree/demo-bad-link/": {
-            "checks": {
-                "status": 0,
-                "200": "2026-11-07 09:59:57.903916",
-                "fail": {
-                    "from": "2026-11-08 10:12:48.308076",
-                    "from-code": 0
-                }
-            },
-            "used": {
-                "url-check": [
-                    "_site/index.html"
-                ]
-            },
-            "url": "https://github.com/publiccodenet/url-check/tree/demo-bad-link/"
-        },
-        "https://github.com/publiccodenet/url-check/tree/main/": {
-            "checks": {
-                "status": 0,
-                "200": "2026-11-07 09:59:58.574575",
-                "fail": {
-                    "from": "2026-11-08 10:12:58.404766",
-                    "from-code": 0
-                }
-            },
-            "used": {
-                "url-check": [
-                    "_site/index.html"
-                ]
-            },
-            "url": "https://github.com/publiccodenet/url-check/tree/main/"
-        }
-    },
+    "urls": {},
     "repos": {
-        "url-check": "failing"
+        "url-check": "passing"
     }
 }
