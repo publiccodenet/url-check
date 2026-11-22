@@ -2,7 +2,7 @@
     "https://publiccodenet.github.io/url-check/": {
         "checks": {
             "status": 200,
-            "200": "2026-11-19 11:30:55.408627"
+            "200": "2026-11-22 11:11:07.332694"
         },
         "used": {
             "url-check": [
@@ -16,12 +16,12 @@
     },
     "https://publiccodenet.github.io/url-check/sir-not-appearing.html": {
         "checks": {
-            "status": 404,
+            "status": 503,
             "fail": {
                 "from": "2023-05-17 15:12:44.330560",
                 "from-code": 404,
-                "to": "2026-11-19 11:30:55.513730",
-                "to-code": 404
+                "to": "2026-11-22 11:11:07.469244",
+                "to-code": 503
             }
         },
         "used": {
